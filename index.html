@@ -139,6 +139,52 @@ body{transition:background .25s}
 @media (max-width:560px){header{gap:8px 10px}.brand{flex:1}.tabs{order:3;flex-basis:100%}.tabs .chip{flex:1;text-align:center;padding:9px 10px}#status{text-align:right}}
 .top h1 .ik{margin-right:6px}
 body.th-boy .card,body.th-boy .kpi{border-color:#d6e4fa}body.th-girl .card,body.th-girl .kpi{border-color:#f5d3e0}
+.hero{padding:16px 18px}
+.hs{color:var(--mut);font-size:13px;margin-bottom:10px}.hs b{color:var(--ink);font-weight:600}
+.hrow{display:flex;flex-wrap:wrap;gap:12px 30px;align-items:flex-end}
+.hl{display:block;font-size:12px;color:var(--mut);font-weight:500;margin-bottom:2px}
+.hnet{border:1px solid var(--line);background:var(--pri-soft);border-radius:14px;padding:10px 16px;cursor:pointer;text-align:left;color:inherit;font:inherit}
+.hnet b{font-size:34px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.hnet .chev{margin-left:10px;color:var(--pri);font-size:12px;font-weight:600}
+.hp b,.hr b{font-size:26px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.hr{display:flex;gap:26px}.hr small,.hp small{color:var(--mut);font-size:13px}
+.hdet{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:14px}
+.sn{background:var(--bg);border-radius:10px;padding:8px 10px}.sn .a{font-size:12px;color:var(--mut)}.sn b{font-size:18px;font-variant-numeric:tabular-nums}.sn small{color:var(--mut);font-size:12px;margin-left:4px}
+.top2{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:10px;margin-bottom:14px;align-items:start}
+.top2>*{min-width:0}
+.top2 .card{margin-bottom:0}
+@media (max-width:980px){.top2{grid-template-columns:minmax(0,1fr)}}
+.calh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.calh b{font-size:15px}
+.calg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cw{font-size:11px;color:var(--mut);text-align:center;padding:2px 0;font-weight:600}
+.cd{height:42px;border:0;border-radius:10px;background:transparent;font:inherit;font-size:14px;cursor:pointer;color:var(--ink);font-variant-numeric:tabular-nums}
+.cd:hover{background:var(--bg)}
+.cd.blank{cursor:default;background:none}
+.cd.done{background:#d9f4e3;color:#0f6b3a;font-weight:700}
+.cd.up{background:#fde3e3;color:#b42318;font-weight:700}
+.cd.miss{background:#fff0d4;color:#985800;font-weight:700}
+.cd.today{outline:2px solid var(--pri);outline-offset:-2px}
+.cd.sel{box-shadow:inset 0 0 0 3px var(--ink)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin:10px 0 2px}
+.lg{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}.lg.done{background:#a7e3bf}.lg.up{background:#f7b4b4}.lg.miss{background:#ffd890}
+.dd{background:var(--bg);border-radius:12px;padding:10px 12px;margin-top:8px}
+.dd .t{font-weight:600}.dd .m{font-size:13px;color:var(--mut);margin-top:2px}
+.dd.done{border-left:4px solid #3fb871}.dd.up{border-left:4px solid #e5484d}.dd.miss{border-left:4px solid #f0a020}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.chips span{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:3px 8px;font-size:12px;font-variant-numeric:tabular-nums}
+.dd .btn{margin-top:8px}
+details.card>summary{cursor:pointer;list-style:none;font-size:15px;font-weight:600}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary:after{content:'  ▼';color:var(--mut);font-size:11px}
+details.card[open]>summary:after{content:'  ▲'}
+details.card[open]>summary{margin-bottom:14px}
+body.th-boy{--bg:#f6faff;--pri:#3b82f6;--pri-soft:#e9f2ff;--line:#e2ebf8}
+body.th-girl{--bg:#fff8fb;--pri:#e8618f;--pri-soft:#ffedf3;--line:#f7e2ea}
+.chip.boy{background:#eef5ff;border-color:#d6e5fb;color:#2a5fc0}.chip.girl{background:#fff1f6;border-color:#f8d6e3;color:#c03a68}
+.chip.boy.on{background:#3b82f6;border-color:#3b82f6;color:#fff}.chip.girl.on{background:#e8618f;border-color:#e8618f;color:#fff}
+body.th-boy .card,body.th-boy .kpi{border-color:#e2ebf8}body.th-girl .card,body.th-girl .kpi{border-color:#f7e2ea}
+@media (prefers-color-scheme:dark){body.th-boy{--bg:#111827;--pri-soft:#1c2740;--line:#273248}body.th-girl{--bg:#1d1218;--pri-soft:#36202b;--line:#3a2630}
+ .cd.done{background:#16402a;color:#8be0ad}.cd.up{background:#4a1d1f;color:#ffaaa8}.cd.miss{background:#4a3410;color:#ffd38a}
+ body.th-boy .card,body.th-boy .kpi{border-color:#273248}body.th-girl .card,body.th-girl .kpi{border-color:#3a2630}}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:13px;z-index:20}
 </style>
 </head>
@@ -509,35 +555,72 @@ function render(){
  const tabs=STATE.students.map(s=>`<button class="chip ${tema(s)} ${st&&s.id===st.id?'on':''}" data-act="tab" data-id="${s.id}"><span class="ik">${ikon(s)}</span>${esc(kisa(s))}<small>${esc(s.tur==='TYT'?'YKS':(s.tur||''))}</small></button>`).join('');
  app.innerHTML=`<header><div class="brand">YKS-LGS Takip</div><div class="tabs">${tabs}</div><div id="status" class="${statusCls}">${esc(statusTxt)}</div></header>`
   +(st?studentView(st):`<div class="card welcome"><h2>YKS-LGS Takip'e hoş geldiniz</h2><p>Verilerinizi Drive'dan almak için eşitleyin, yedek dosyasından yükleyin ya da yeni öğrenci ekleyin.</p><button class="btn pri" data-act="gsync">🔄 Drive ile eşitle</button> <button class="btn" data-act="restore">📥 Dosyadan yükle</button> <button class="btn" data-act="add-student">+ Öğrenci ekle</button></div>`);
- if(st)drawCharts(st);
+ if(st&&ANALIZ_OPEN)drawCharts(st);
 }
 function delta(v,p,d=2,inv=false){if(p==null||v==null)return'';const x=v-p;const good=inv?x<-0.0001:x>0.0001,bad=inv?x>0.0001:x<-0.0001;return `<span class="delta ${good?'up':bad?'down':''}">${x>0.0001?'▲':x<-0.0001?'▼':'•'} ${tf(Math.abs(x),d)}</span>`}
 
+/* ---------- yeni ana sayfa: özet, takvim ---------- */
+let HERO_OPEN=false,ANALIZ_OPEN=false,CAL_M=null,CAL_SEL=null;
+const GUNK=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+function heroHtml(st,ex){
+ const last=ex[ex.length-1],prev=ex[ex.length-2],t=tot(last),pt=prev?tot(prev):null;
+ const sl=siraList(last),su=sl.find(x=>x.k==='sube'),ku=sl.find(x=>x.k==='kurum');
+ const rk=[su&&`<div><span class="hl">Sınıf sırası</span><b>${ti(su.s)}.</b>${su.n?`<small> / ${ti(su.n)}</small>`:''}</div>`,ku&&`<div><span class="hl">Kurum sırası</span><b>${ti(ku.s)}.</b>${ku.n?`<small> / ${ti(ku.n)}</small>`:''}</div>`].filter(Boolean).join('');
+ const det=T.subj.map(s=>{const a=dy(last,s.k),v=a[0]-a[1]/T.div;return `<div class="sn"><div class="a"><span class="dot" style="background:${css(GCOL[s.g])}"></span>${s.ad}</div><b class="${v<0?'neg':''}">${tf(v)}</b><small>${a[0]}D · ${a[1]}Y · ${s.s-a[0]-a[1]}B</small></div>`}).join('');
+ return `<div class="card hero"><div class="hs">Son deneme · <b>${esc(last.ad)}</b> · ${fdate(last.tarih)}</div>
+ <div class="hrow"><button class="hnet" data-act="hero-toggle"><span class="hl">Toplam net · ${t.d} D / ${t.y} Y</span><b>${tf(t.n)}</b>${delta(t.n,pt&&pt.n)}<span class="chev">${HERO_OPEN?'Gizle ▲':'Dersler ▼'}</span></button>
+ <div class="hp"><span class="hl">${T.puan}</span><b>${tf(last.puan)}</b>${delta(last.puan,prev?prev.puan:null)}</div>
+ ${rk?`<div class="hr">${rk}</div>`:''}</div>
+ ${HERO_OPEN?`<div class="hdet">${det}</div>`:''}</div>`;
+}
+function calData(st){
+ const td=today(),items=takvimItems(st,'2000-01-01','2100-01-01',addD(td,120)),m=matchTakvim(st,items),bd={},used=new Set();
+ items.forEach((x,i)=>{const e=m.get(i)||null;if(e)used.add(e.id);(bd[x.tarih]=bd[x.tarih]||[]).push({plan:x,exam:e})});
+ st.exams.forEach(e=>{if(!used.has(e.id))(bd[e.tarih]=bd[e.tarih]||[]).push({plan:null,exam:e})});
+ return bd;
+}
+const dayCls=(ds,en)=>!en?'':en.some(x=>x.exam)?'done':ds>=today()?'up':'miss';
+function examBox(st,e){
+ return withT(exT(st,e),()=>{const t=tot(e),sl=siraList(e).slice(0,3).map(x=>`${x.l} ${ti(x.s)}${x.n?'/'+ti(x.n):''}`).join(' · ');
+  return `<div class="dd done"><div class="t">✅ ${esc(e.ad)}${isYKS(st)?' · '+exT(st,e):''}</div><div class="m">${fdate(e.tarih)} · <b>${tf(t.n)} net</b>${e.puan!=null?' · '+tf(e.puan)+' puan':''}${sl?' · '+sl:''}</div>
+  <div class="chips">${T.groups.map(g=>`<span>${g.kisa} <b>${tf(gNet(e,g.k))}</b></span>`).join('')}</div>
+  <button class="btn sm" data-act="edit-exam" data-id="${e.id}">Ayrıntı / düzenle</button></div>`});
+}
+function dayDetail(st,ds,en){
+ const d=pd(ds),h=`<div class="m" style="margin-top:4px"><b>${d.getDate()} ${AYLAR[d.getMonth()]} ${d.getFullYear()}, ${GUN[d.getDay()]}</b> · ${relDay(dayDiff(ds,today()))}</div>`;
+ if(!en)return h+`<div class="dd"><div class="m">Bu gün için planlı deneme yok.</div><button class="btn sm" data-act="tk-add" data-tarih="${ds}" data-ad="" data-tur="">+ Bu tarihe deneme ekle</button></div>`;
+ return h+en.map(x=>{if(x.exam)return examBox(st,x.exam);const p=x.plan,c=ds>=today()?'up':'miss';
+  return `<div class="dd ${c}"><div class="t">${c==='up'?'📅':'⏳'} ${esc(tkAd(p))}</div><div class="m">${GUN[d.getDay()]}${p.saat?' · saat '+esc(p.saat):''}${c==='miss'?' · sonuç henüz girilmedi':''}</div>${c==='miss'?tkBtn(st,p,'+ Sonucu ekle'):''}</div>`}).join('');
+}
+function calHtml(st){
+ const bd=calData(st),td=today(),m=CAL_M||td.slice(0,7),y=+m.slice(0,4),mo=+m.slice(5,7);
+ const lead=(new Date(y,mo-1,1).getDay()+6)%7,n=new Date(y,mo,0).getDate();
+ let cells='';for(let i=0;i<lead;i++)cells+='<div class="cd blank"></div>';
+ for(let d=1;d<=n;d++){const ds=`${m}-${String(d).padStart(2,'0')}`,en=bd[ds];
+  cells+=`<button class="cd ${dayCls(ds,en)}${ds===td?' today':''}${ds===CAL_SEL?' sel':''}" data-act="cal-day" data-d="${ds}">${d}</button>`}
+ const nx=Object.keys(bd).filter(d=>d>=td&&bd[d].some(x=>!x.exam)).sort()[0];
+ const det=CAL_SEL?dayDetail(st,CAL_SEL,bd[CAL_SEL]):nx?`<div class="m" style="margin-top:6px">Sıradaki: <b>${fdate(nx).slice(0,5)} ${GUN[pd(nx).getDay()]}</b> · ${esc(tkAd(bd[nx].find(x=>!x.exam).plan))} · ${relDay(dayDiff(nx,td))}</div>`:'';
+ return `<div class="calh"><button class="btn sm" data-act="cal-prev" aria-label="Önceki ay">‹</button><b>${AYLAR[mo-1]} ${y}</b><button class="btn sm" data-act="cal-next" aria-label="Sonraki ay">›</button></div>
+ <div class="calg">${GUNK.map(x=>`<div class="cw">${x}</div>`).join('')}${cells}</div>
+ <div class="legend"><span><i class="lg done"></i>Yapıldı</span><span><i class="lg up"></i>Yapılacak</span><span><i class="lg miss"></i>Sonuç girilmedi</span></div>
+ <div class="caldet">${det}</div>`;
+}
+function calRefresh(){const b=document.getElementById('calbox');if(b)b.innerHTML=calHtml(active())}
+function calCard(st){const t=st.takvim||{};return `<div class="card"><h2>📅 Sınav takvimi${t.yer?`<small>${esc(t.yer)}</small>`:''}</h2><div id="calbox">${calHtml(st)}</div></div>`}
 function studentView(st){
  const ex=sorted(st);
  const head=`<div class="top"><div><h1><span class="ik">${ikon(st)}</span>${esc(st.ad)}</h1><div class="sub">${esc([st.sinif,isYKS(st)?'YKS':st.tur,st.alan].filter(Boolean).join(' · '))}${st.hedef?` · Hedef: ${tf(st.hedef)} puan`:''} · ${ex.length} deneme</div></div>
  ${isYKS(st)?`<div class="seg">${['TYT','AYT'].map(k=>`<button class="${VIEW===k?'on':''}" data-act="view" data-v="${k}">${k}</button>`).join('')}</div>`:''}
  <div class="actions"><button class="btn" data-act="report" ${ex.length?'':'disabled'}>📊 Aylık rapor</button><button class="btn" data-act="gsync">🔄 Eşitle</button><button class="btn pri" data-act="add-exam">+ Deneme ekle</button><div class="menu"><button class="btn" data-act="menu" aria-label="Diğer">⋯</button><div class="pop" hidden><button data-act="edit-student">👤 Öğrenci bilgileri ve takvim</button><button data-act="copy-all" ${ex.length?'':'disabled'}>📋 Tüm denemeleri kopyala</button><button data-act="gsync">🔄 Drive ile eşitle</button><button data-act="grestore">☁️ Drive'daki yedekle değiştir</button><button data-act="backup">📤 Yedeği dosya olarak paylaş</button><button data-act="restore">📥 Dosyadan / metinden yükle</button><button data-act="add-student">👥 Öğrenci ekle</button><button data-act="trash">🗑 Çöp kutusu${(st.trash||[]).length?` (${st.trash.length})`:''}</button></div></div></div></div>`;
- if(!ex.length)return head+takvimCard(st)+`<div class="card empty">Bu öğrenci için henüz ${isYKS(st)?VIEW+' denemesi':'deneme'} yok.<br><br><button class="btn pri" data-act="add-exam">+ Deneme ekle</button></div>`;
- const nets=ex.map(e=>tot(e).n),last=ex[ex.length-1],prev=ex[ex.length-2];
- const lastN=nets[nets.length-1],prevN=prev?nets[nets.length-2]:null;
- const bi=nets.indexOf(Math.max(...nets));
- const puans=ex.map(e=>e.puan).filter(x=>x!=null);
- const rankEx=[...ex].reverse().find(e=>siraList(e).length);
- const yEx=[...ex].reverse().filter(e=>e.yuzdelik!=null);
- let rk='';
- if(rankEx){const L=siraList(rankEx),f=L[0];rk=`<div class="kpi"><div class="l">Son sıralama · ${esc(f.l)}</div><div class="v">${ti(f.s)}.${f.n?` <small>/ ${ti(f.n)}</small>`:''}</div><div class="s">${L.slice(1).map(x=>`${x.l} ${ti(x.s)}${x.n?'/'+ti(x.n):''}`).join(' · ')||fdate(rankEx.tarih)}</div></div>`}
- const kpis=`<div class="kpis">
- <div class="kpi"><div class="l">Son deneme neti</div><div class="v">${tf(lastN)}${delta(lastN,prevN)}</div><div class="s">${esc(last.ad)} · ${fdate(last.tarih)}</div></div>
- <div class="kpi"><div class="l">Son ${T.puan}</div><div class="v">${tf(last.puan)}${delta(last.puan,prev?prev.puan:null)}</div><div class="s">${st.hedef&&last.puan!=null?(last.puan>=st.hedef?'Hedefin üstünde 🎯':`Hedefe ${tf(st.hedef-last.puan)} puan`):'önceki denemeye göre'}</div></div>
- <div class="kpi"><div class="l">Ortalama net</div><div class="v">${tf(mean(nets))}</div><div class="s">Ort. puan ${tf(mean(puans))}</div></div>
+ if(!ex.length)return head+`<div class="top2"><div class="card empty">Bu öğrenci için henüz ${isYKS(st)?VIEW+' denemesi':'deneme'} yok.<br><br><button class="btn pri" data-act="add-exam">+ Deneme ekle</button></div>${calCard(st)}</div>`;
+ const nets=ex.map(e=>tot(e).n),bi=nets.indexOf(Math.max(...nets)),yEx=[...ex].reverse().filter(e=>e.yuzdelik!=null);
+ const k=`<div class="kpis">
+ <div class="kpi"><div class="l">Ortalama net</div><div class="v">${tf(mean(nets))}</div><div class="s">${ex.length} deneme · ort. puan ${tf(mean(ex.map(e=>e.puan).filter(x=>x!=null)))}</div></div>
  <div class="kpi"><div class="l">En yüksek net</div><div class="v">${tf(nets[bi])}</div><div class="s">${esc(ex[bi].ad)} · ${fdate(ex[bi].tarih)}</div></div>
- ${yEx.length?`<div class="kpi"><div class="l">Tahmini yüzdelik dilim</div><div class="v">%${tf(yEx[0].yuzdelik)}${delta(yEx[0].yuzdelik,yEx[1]?yEx[1].yuzdelik:null,2,true)}</div><div class="s">küçük olan daha iyi · ${fdate(yEx[0].tarih)}</div></div>`:''}
- ${rk}</div>`;
- return head+kpis+takvimCard(st)+insights(ex,nets)+`<div class="grid2">
- <div class="card"><h2>Net ve puan gelişimi</h2><div class="chartbox"><canvas id="ch1"></canvas></div></div>
- <div class="card"><h2>${T.chart2}</h2><div class="chartbox"><canvas id="ch2"></canvas></div></div></div>`
- +lessonTable(ex)+examTable(ex);
+ ${yEx.length?`<div class="kpi"><div class="l">Tahmini yüzdelik</div><div class="v">%${tf(yEx[0].yuzdelik)}</div><div class="s">küçük olan daha iyi</div></div>`:''}</div>`;
+ return head+heroHtml(st,ex)+`<div class="top2">${examTable(ex)}${calCard(st)}</div>`
+  +`<details class="card" id="analiz" ${ANALIZ_OPEN?'open':''}><summary>📈 Grafikler ve ders analizi</summary>${k}${insights(ex,nets).replace('<div class="card">','<div class="card" style="box-shadow:none">')}
+  <div class="grid2"><div class="card"><h2>Net ve puan gelişimi</h2><div class="chartbox"><canvas id="ch1"></canvas></div></div><div class="card"><h2>${T.chart2}</h2><div class="chartbox"><canvas id="ch2"></canvas></div></div></div>${lessonTable(ex)}</details>`;
 }
 function subjStats(ex){
  return T.subj.map(s=>{const n=ex.map(e=>sNet(e,s.k));const b=ex.map(e=>{const x=dy(e,s.k);return s.s-x[0]-x[1]});const y=ex.map(e=>dy(e,s.k)[1]);
@@ -575,11 +658,8 @@ function lessonTable(ex){
  <thead><tr><th>Ders</th><th>Soru</th><th>Ort. net</th><th>Son</th><th>En iyi</th><th>Ort. boş</th><th>Başarı</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 function examTable(ex){
- const rows=[...ex].reverse().map(e=>{const t=tot(e);const r=siraList(e).slice(0,2).map(x=>`${x.l} ${ti(x.s)}${x.n?'/'+ti(x.n):''}`);
-  return `<tr class="click" data-act="edit-exam" data-id="${e.id}"><td>${fdate(e.tarih)}</td><td class="name">${esc(e.ad)}${e.src&&e.src.fileId?' <span class="muted" title="Drive\'dan alındı">☁︎</span>':''}${e.not?` <span class="muted" title="${esc(e.not)}">ⓘ</span>`:''}</td>
-  ${T.groups.map(g=>{const v=gNet(e,g.k);return `<td class="${v<0?'neg':''}">${tf(v)}</td>`}).join('')}<td>${t.d}/${t.y}</td><td><b>${tf(t.n)}</b></td><td>${tf(e.puan)}</td><td class="muted">${r.join(' · ')||'—'}</td></tr>`}).join('');
- return `<div class="card"><h2>Denemeler<small>düzenlemek için satıra dokunun</small></h2><div class="tscroll"><table>
- <thead><tr><th>Tarih</th><th>Deneme</th>${T.groups.map(g=>`<th>${g.kisa}</th>`).join('')}<th>D/Y</th><th>Net</th><th>Puan</th><th>Sıralama</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+ const rows=[...ex].reverse().map(e=>{const t=tot(e);return `<tr class="click" data-act="edit-exam" data-id="${e.id}"><td>${fdate(e.tarih).slice(0,5)}</td><td class="name">${esc(e.ad)}${e.not?` <span class="muted" title="${esc(e.not)}">ⓘ</span>`:''}</td>${T.groups.map(g=>{const v=gNet(e,g.k);return `<td class="${v<0?'neg':''}">${tf(v)}</td>`}).join('')}<td><b>${tf(t.n)}</b></td><td>${tf(e.puan)}</td></tr>`}).join('');
+ return `<div class="card"><h2>📝 Denemeler<small>${ex.length} deneme · ayrıntı için dokunun</small></h2><div class="tscroll"><table><thead><tr><th>Tarih</th><th style="text-align:left">Deneme</th>${T.groups.map(g=>`<th>${g.kisa}</th>`).join('')}<th>Net</th><th>Puan</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 function drawCharts(st){
  if(!window.Chart)return;
@@ -919,7 +999,7 @@ document.addEventListener('click',ev=>{
  const act=el.dataset.act;const st=active();
  if(act==='ovclose'){if(ev.target===el&&!IMPORT)closeModal();return}
  switch(act){
-  case 'tab':setActive(el.dataset.id);break;
+  case 'tab':CAL_SEL=null;CAL_M=null;setActive(el.dataset.id);break;
   case 'add-student':studentModal(null);break;
   case 'edit-student':studentModal(st);break;
   case 'save-student':saveStudent();break;
@@ -943,6 +1023,9 @@ document.addEventListener('click',ev=>{
   case 'report':reportModal(st);break;
   case 'rep-copy':copyText(REPTXT);break;
   case 'gbackup':case 'gsync':driveSync(false);break;
+  case 'hero-toggle':HERO_OPEN=!HERO_OPEN;render();break;
+  case 'cal-day':CAL_SEL=CAL_SEL===el.dataset.d?null:el.dataset.d;calRefresh();break;
+  case 'cal-prev':case 'cal-next':{const m=CAL_M||today().slice(0,7);const d=new Date(+m.slice(0,4),+m.slice(5,7)-1+(act==='cal-next'?1:-1),1);CAL_M=iso(d).slice(0,7);CAL_SEL=null;calRefresh();break}
   case 'grestore':driveRestore();break;
   case 'grestore-go':grestoreGo();break;
   case 'backup':backup();break;
@@ -966,6 +1049,7 @@ document.addEventListener('change',ev=>{
  if(t.id==='rep-month')reportModal(stById(editing.sid),t.value);
  if(t.id==='restfile'&&t.files&&t.files[0]){const f=t.files[0];f.text().then(x=>{document.getElementById('resttxt').value=x;document.getElementById('restmsg').textContent=f.name+' seçildi'})}
 });
+document.addEventListener('toggle',ev=>{if(ev.target&&ev.target.id==='analiz'){ANALIZ_OPEN=ev.target.open;if(ANALIZ_OPEN){charts.forEach(c=>c.destroy());charts=[];const a=active();if(a){useT(a);drawCharts(a)}}}},true);
 document.addEventListener('input',ev=>{if(ev.target.closest('.et'))recalc()});
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&mroot.innerHTML)closeAny()});
 migrate();gsInit();render();gStatus();{const pd=gHandleRedirect();if(pd==='backup'||pd==='sync')driveSync(false);else if(pd==='restore')driveRestore();else if(gValid())driveSync(true);}
