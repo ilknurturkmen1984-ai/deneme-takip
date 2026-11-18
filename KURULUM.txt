@@ -1,0 +1,30 @@
+DENEME TAKİP – KURULUM
+
+1) GitHub'a yükleme (bir kez)
+   - github.com'da oturum açın → sağ üstte "+" → "New repository".
+   - Ad: deneme-takip  ·  "Public" seçili kalsın  ·  "Create repository".
+   - Açılan sayfada "uploading an existing file" bağlantısına tıklayın.
+   - Bu klasördeki dosyaların hepsini (index.html, sw.js, manifest.webmanifest ve png'ler) sürükleyip bırakın → "Commit changes".
+   - Settings → Pages → Source: "Deploy from a branch", Branch: "main" ve "/ (root)" → Save.
+   - 1–2 dakika sonra uygulama şu adreste açılır:
+     https://ilknurturkmen1984-ai.github.io/deneme-takip/
+   Not: Depoda kişisel veri yok. Çocukların sonuçları yalnızca telefonlarda saklanır.
+
+2) Telefona kurma
+   - iPhone: Safari'de adresi açın → Paylaş düğmesi → "Ana Ekrana Ekle".
+   - Android: Chrome'da adresi açın → ⋮ menüsü → "Uygulamayı yükle" veya "Ana ekrana ekle".
+   - Önemli (iPhone): Ana ekrana eklenen uygulamanın verileri Safari'den ayrı tutulur.
+     Verileri her zaman ana ekrandaki simgeden açtığınız uygulamaya yükleyin.
+
+3) Mevcut verileri taşıma
+   - Claude'daki Deneme Takip sayfasında ⋯ → "Verileri yeni uygulamaya aktar" (veriler kopyalanır).
+   - Yeni uygulamada "Yedekten yükle" → metni kutuya yapıştırın → "Yükle".
+
+4) Eşinizin telefonu
+   - Kendi uygulamanızda ⋯ → "Yedeği kaydet / paylaş" → WhatsApp ile gönderin.
+   - Eşiniz dosyayı iPhone'da "Dosyalar"a kaydeder, uygulamada ⋯ → "Yedekten yükle" → "Yedek dosyası seç".
+   - Yeni denemeler girdikçe aynı yolla güncel yedeği gönderebilirsiniz.
+
+5) Güvenlik
+   - Ara sıra "💾 Yedekle" ile yedek alıp Drive'a koyun. Telefon değişirse ya da uygulama silinirse
+     veriler yedekten geri yüklenir.

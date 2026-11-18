@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Deneme Takip</title>
+<meta name="description" content="Deneme sınavı takip uygulaması (TYT · AYT · LGS)">
+<meta name="theme-color" content="#2f5bea">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Deneme Takip">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style id="css">
+:root{--bg:#f5f6fa;--card:#fff;--ink:#161925;--mut:#6a6f80;--line:#e5e7ee;--pri:#2f5bea;--pri-soft:#eaf0ff;--up:#0f8a4f;--down:#d0342c;--warn:#a86400;--warn-soft:#fff4e0;
+--c-tr:#2f5bea;--c-sos:#d98a00;--c-mat:#7b3fe4;--c-fen:#10916a;--c-ink:#c2410c;--c-din:#0e7490;--c-ing:#be185d;--c-puan:#e2573b}
+@media (prefers-color-scheme:dark){:root{--bg:#12141b;--card:#1b1e28;--ink:#eceef4;--mut:#9aa0b2;--line:#2b2f3c;--pri:#6f8dff;--pri-soft:#232c4a;--up:#3fc785;--down:#ff6b60;--warn:#f0b04a;--warn-soft:#3a2d14;
+--c-tr:#6f8dff;--c-sos:#f0b04a;--c-mat:#a77cff;--c-fen:#3fc79a;--c-ink:#fb8a5c;--c-din:#38c3dc;--c-ing:#f472b6;--c-puan:#ff7a5c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button:disabled{opacity:.5;cursor:default}
+.wrap{max-width:1120px;margin:0 auto;padding:18px 16px 60px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:18px}
+.brand{font-weight:700;font-size:18px;letter-spacing:-.01em;margin-right:8px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;flex:1}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;cursor:pointer;font-weight:500}
+.chip small{opacity:.7;font-weight:500;margin-left:4px}
+.chip.on{background:var(--pri);border-color:var(--pri);color:#fff}
+.chip.add{border-style:dashed;color:var(--mut)}
+#status{font-size:12px;color:var(--mut)}
+#status.warn{color:var(--warn)}
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+.top h1{margin:0;font-size:24px;letter-spacing:-.02em}
+.top .sub{color:var(--mut);margin-top:2px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.btn:hover:not(:disabled){border-color:var(--mut)}
+.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+.btn.danger{color:var(--down)}
+.btn.danger.solid{background:var(--down);border-color:var(--down);color:#fff}
+.btn.sm{padding:5px 10px;font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.kpi .l{color:var(--mut);font-size:12px;font-weight:500}
+.kpi .v{font-size:24px;font-weight:700;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:13px;font-weight:500;color:var(--mut)}
+.kpi .s{color:var(--mut);font-size:12px;margin-top:2px}
+.delta{font-size:12px;font-weight:600;margin-left:6px}
+.delta.up{color:var(--up)}.delta.down{color:var(--down)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.grid2 .card{margin-bottom:0}
+.card h2{font-size:14px;margin:0 0 10px;font-weight:600}
+.card h2 small{color:var(--mut);font-weight:400;margin-left:6px}
+.chartbox{position:relative;height:260px}
+.insights{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;margin:0;padding:0;list-style:none}
+.insights li{background:var(--bg);border-radius:10px;padding:10px 12px}
+.insights b{display:block;font-size:12px;color:var(--mut);font-weight:500;margin-bottom:2px}
+.tscroll{overflow-x:auto;margin:0 -16px;padding:0 16px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:8px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{font-size:12px;color:var(--mut);font-weight:500}
+th:first-child,td:first-child{text-align:left}
+td.name{text-align:left;white-space:normal;min-width:160px}
+tr.grp td{font-weight:600}
+tr.sub td:first-child{padding-left:22px;color:var(--mut)}
+tbody tr.click{cursor:pointer}
+tbody tr.click:hover{background:var(--pri-soft)}
+.bar{display:inline-block;width:80px;height:7px;background:var(--line);border-radius:4px;vertical-align:middle;margin-left:6px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:4px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.muted{color:var(--mut)}
+.neg{color:var(--down)}
+.empty{text-align:center;padding:50px 20px;color:var(--mut)}
+.ov{position:fixed;inset:0;background:rgba(10,12,20,.45);display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto;z-index:10}
+.mod{background:var(--card);border-radius:16px;width:100%;max-width:660px;padding:18px 18px 16px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.mod h3{margin:0 0 14px;font-size:17px}
+.f{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px}
+.f label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mut);font-weight:500}
+.f label.w2{grid-column:span 2}
+input,select,textarea{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:8px 10px;width:100%;min-width:0}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--pri);outline-offset:-1px}
+input[type=checkbox]{width:18px;height:18px;padding:0;accent-color:var(--pri)}
+.et input{width:64px;text-align:center;padding:6px 4px}
+.et td,.et th{padding:5px 6px}
+.et td small{display:block;color:var(--mut);font-size:11px}
+.et tr.bad input{border-color:var(--down);background:rgba(208,52,44,.08)}
+.et tfoot td{font-weight:700;border-bottom:0}
+.sec{font-size:12px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px}
+.mfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:16px;flex-wrap:wrap}
+.mfoot .r{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.err{color:var(--down);font-size:13px;margin-top:8px}
+.fill{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--pri-soft);border-radius:10px;padding:10px 12px;margin-bottom:14px}
+.fill .btn{cursor:pointer}
+.fill #fillmsg{font-size:13px;flex:1;min-width:160px}
+.imp{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.imp:last-child{border-bottom:0}
+.imp .b{flex:1;min-width:0}
+.imp .t{font-weight:600}
+.imp .fn{font-size:12px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.imp .w{font-size:12px;color:var(--warn);margin-top:3px}
+.imp .e{font-size:12px;color:var(--down);margin-top:3px}
+.imp .ck{padding-top:2px;width:22px}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--line);border-top-color:var(--pri);border-radius:50%;animation:sp .8s linear infinite;vertical-align:-1px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.tkup{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
+.tk{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:10px;padding:8px 10px}
+.tk-d{width:40px;text-align:center;line-height:1.1;flex:none}.tk-d b{display:block;font-size:18px}.tk-d span{font-size:11px;color:var(--mut);text-transform:uppercase}
+.tk-b{flex:1;min-width:0}.tk-b .t{font-weight:600;font-size:13px}.tk-b .muted{font-size:12px}
+.ok{color:var(--up);font-size:12px;font-weight:600;white-space:nowrap}
+.tkall{margin-top:12px}.tkall summary{cursor:pointer;color:var(--pri);font-weight:500;font-size:13px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.seg button{border:0;background:none;padding:8px 16px;cursor:pointer;font-weight:600;color:var(--mut)}
+.seg button.on{background:var(--pri);color:#fff}
+.menu{position:relative;display:inline-block}
+.pop{position:absolute;right:0;top:calc(100% + 6px);background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.15);min-width:210px;z-index:6;padding:6px}
+.pop button{display:block;width:100%;text-align:left;border:0;background:none;padding:10px 12px;border-radius:8px;cursor:pointer;font-weight:500}
+.pop button:hover{background:var(--bg)}
+.rephead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.rephead select{width:auto}
+@media (max-width:560px){.wrap{padding:14px 12px 50px}.top h1{font-size:21px}.actions{width:100%;display:grid;grid-template-columns:1fr 1fr auto;gap:8px}.actions .btn{justify-content:center;white-space:nowrap}.actions .btn.pri{order:-1;grid-column:1/-1}.kpi .v{font-size:21px}.mod{padding:16px 14px}.ov{padding:10px 6px}.f label.w2{grid-column:1/-1}}
+.wrap{padding-top:max(18px,env(safe-area-inset-top));padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));padding-bottom:max(60px,env(safe-area-inset-bottom))}
+.fill{display:none!important}
+.welcome{text-align:center;padding:40px 20px}.welcome h2{font-size:20px;margin:0 0 6px}.welcome p{color:var(--mut);margin:0 0 18px}
+textarea.json{font:12px ui-monospace,Menlo,monospace;min-height:140px}
+html{-webkit-text-size-adjust:100%}body{overscroll-behavior-y:none}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:13px;z-index:20}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div id="modal-root"></div>
+<script type="application/json" id="state">{"version":4,"students":[]}</script>
+<script id="main">
+/* ---------- exam types ---------- */
+const TYPES={
+ TYT:{key:'TYT',div:4,puan:'TYT puanı',chart2:'Bölüm bazında net',
+  subj:[{k:'tr',ad:'Türkçe',s:40,g:'tr'},{k:'tar',ad:'Tarih',s:5,g:'sos'},{k:'cog',ad:'Coğrafya',s:5,g:'sos'},{k:'fel',ad:'Felsefe',s:5,g:'sos'},{k:'din',ad:'Din Kültürü',s:5,g:'sos'},
+   {k:'mat',ad:'Matematik',s:30,g:'mat'},{k:'geo',ad:'Geometri',s:10,g:'mat'},{k:'fiz',ad:'Fizik',s:7,g:'fen'},{k:'kim',ad:'Kimya',s:7,g:'fen'},{k:'biy',ad:'Biyoloji',s:6,g:'fen'}],
+  groups:[{k:'tr',ad:'Türkçe',kisa:'Türkçe',s:40},{k:'sos',ad:'Sosyal Bilimler',kisa:'Sosyal',s:20},{k:'mat',ad:'Temel Matematik',kisa:'Mat',s:40},{k:'fen',ad:'Fen Bilimleri',kisa:'Fen',s:20}]},
+ LGS:{key:'LGS',div:3,puan:'LGS puanı',chart2:'Ders bazında net',
+  subj:[{k:'tr',ad:'Türkçe',s:20,g:'tr'},{k:'ink',ad:'T.C. İnkılap Tarihi',s:10,g:'ink'},{k:'din',ad:'Din Kültürü',s:10,g:'din'},{k:'ing',ad:'İngilizce',s:10,g:'ing'},{k:'mat',ad:'Matematik',s:20,g:'mat'},{k:'fen',ad:'Fen Bilimleri',s:20,g:'fen'}],
+  groups:[{k:'tr',ad:'Türkçe',kisa:'Türkçe',s:20},{k:'ink',ad:'İnkılap Tarihi',kisa:'İnkılap',s:10},{k:'din',ad:'Din Kültürü',kisa:'Din',s:10},{k:'ing',ad:'İngilizce',kisa:'İng',s:10},{k:'mat',ad:'Matematik',kisa:'Mat',s:20},{k:'fen',ad:'Fen Bilimleri',kisa:'Fen',s:20}]}
+};
+TYPES.AYT={key:'AYT',div:4,puan:'SAY puanı',chart2:'Ders bazında net',
+ subj:[{k:'mat',ad:'Matematik (geometri dahil)',s:40,g:'mat'},{k:'fiz',ad:'Fizik',s:14,g:'fiz'},{k:'kim',ad:'Kimya',s:13,g:'kim'},{k:'biy',ad:'Biyoloji',s:13,g:'biy'}],
+ groups:[{k:'mat',ad:'Matematik',kisa:'Mat',s:40},{k:'fiz',ad:'Fizik',kisa:'Fizik',s:14},{k:'kim',ad:'Kimya',kisa:'Kimya',s:13},{k:'biy',ad:'Biyoloji',kisa:'Biyoloji',s:13}]};
+let VIEW='TYT';try{VIEW=localStorage.getItem('dt_view')||'TYT'}catch(e){}
+const isYKS=st=>!!st&&st.tur==='TYT';
+const exT=(st,e)=>isYKS(st)?((e&&e.tur)||'TYT'):((st&&st.tur)||'TYT');
+const withT=(k,f)=>{const o=T;T=TYPES[k]||o;try{return f()}finally{T=o}};
+const GCOL={fiz:'--c-tr',kim:'--c-fen',biy:'--c-ing',tr:'--c-tr',sos:'--c-sos',mat:'--c-mat',fen:'--c-fen',ink:'--c-ink',din:'--c-din',ing:'--c-ing'};
+const SIRA=[['sube','Şube/Sınıf'],['kurum','Kurum/Okul'],['ilce','İlçe'],['il','İl'],['genel','Genel']];
+const ALANLAR=['Sayısal','Eşit Ağırlık','Sözel','Dil'];
+let T=TYPES.TYT;
+const useT=(st,e)=>(T=TYPES[e?exT(st,e):isYKS(st)?VIEW:(st&&st.tur)]||TYPES.TYT);
+
+let STATE=JSON.parse(document.getElementById('state').textContent);
+const STORE='dt_state_v1';try{const sv=localStorage.getItem(STORE);if(sv)STATE=JSON.parse(sv)}catch(e){}
+const app=document.getElementById('app'),mroot=document.getElementById('modal-root');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10);
+const tf=(n,d=2)=>(n==null||isNaN(n))?'—':Number(n).toLocaleString('tr-TR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const ti=n=>(n==null||n==='')?'—':Number(n).toLocaleString('tr-TR');
+const fdate=s=>{if(!s)return'—';const p=s.split('-');return p[2]+'.'+p[1]+'.'+p[0]};
+const sdate=s=>{const p=s.split('-');return p[2]+'.'+p[1]};
+const today=()=>new Date().toISOString().slice(0,10);
+const validDate=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)?s:null;
+const num=v=>{if(v==null)return null;v=String(v).trim().replace(/\./g,'').replace(',','.');if(v==='')return null;const n=Number(v);return isNaN(n)?null:n};
+const dec=v=>{if(v==null)return null;v=String(v).trim().replace('%','');if(v==='')return null;if(v.includes(','))v=v.replace(/\./g,'').replace(',','.');const n=Number(v);return isNaN(n)?null:n};
+const dy=(e,k)=>(e.r&&e.r[k])?e.r[k]:[0,0];
+const sNet=(e,k)=>{const a=dy(e,k);return a[0]-a[1]/T.div};
+const gNet=(e,g)=>T.subj.filter(s=>s.g===g).reduce((a,s)=>a+sNet(e,s.k),0);
+const gBos=(e,g)=>T.subj.filter(s=>s.g===g).reduce((a,s)=>{const x=dy(e,s.k);return a+(s.s-x[0]-x[1])},0);
+const gY=(e,g)=>T.subj.filter(s=>s.g===g).reduce((a,s)=>a+dy(e,s.k)[1],0);
+const tot=e=>T.subj.reduce((a,s)=>{const x=dy(e,s.k);a.d+=x[0];a.y+=x[1];a.n+=x[0]-x[1]/T.div;return a},{d:0,y:0,n:0});
+const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+const sorted=st=>[...(isYKS(st)?st.exams.filter(e=>(e.tur||'TYT')===VIEW):st.exams)].sort((a,b)=>a.tarih<b.tarih?-1:a.tarih>b.tarih?1:0);
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const stById=id=>STATE.students.find(s=>s.id===id);
+const siraList=e=>SIRA.filter(([k])=>e.sira&&e.sira[k]&&e.sira[k][0]!=null).map(([k,l])=>({k,l:l.split('/')[0],s:e.sira[k][0],n:e.sira[k][1]}));
+
+/* ---------- calendar ---------- */
+const GUN=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'],AY=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+const pd=s=>{const a=s.split('-').map(Number);return new Date(a[0],a[1]-1,a[2])};
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const addD=(s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return iso(d)};
+const dayDiff=(a,b)=>Math.round((pd(a)-pd(b))/864e5);
+const kind=s=>/AYT/i.test(s||'')?'AYT':/TYT/i.test(s||'')?'TYT':'';
+const tkAd=x=>[x.yer,x.ad].filter(Boolean).join(' · ');
+function takvimItems(st,from,to,recTo){
+ const t=st.takvim||{},out=[];
+ (t.liste||[]).forEach(x=>{if(x.tarih>=from&&x.tarih<=to)out.push({tarih:x.tarih,ad:x.ad,saat:x.saat||'',yer:t.yer||''})});
+ (t.tekrar||[]).forEach(r=>{const end=recTo||to;const d=pd(r.bas&&r.bas>from?r.bas:from);while(d.getDay()!==r.gun)d.setDate(d.getDate()+1);
+  for(let x=iso(d);x<=end;x=addD(x,7))out.push({tarih:x,ad:r.ad||'Deneme',saat:r.saat||'',yer:r.yer||'',haftalik:true})});
+ return out.sort((a,b)=>a.tarih<b.tarih?-1:a.tarih>b.tarih?1:0);
+}
+function matchTakvim(st,items){
+ const pairs=[];
+ items.forEach((it,i)=>st.exams.forEach(e=>{const dd=Math.abs(dayDiff(e.tarih,it.tarih));if(dd>(it.haftalik?0:3))return;
+  if((kind(it.ad)==='AYT')!==(e.tur==='AYT'||kind(e.ad)==='AYT'))return;pairs.push([dd,i,e])}));
+ pairs.sort((a,b)=>a[0]-b[0]);const m=new Map(),used=new Set();
+ pairs.forEach(([d,i,e])=>{if(m.has(i)||used.has(e.id))return;m.set(i,e);used.add(e.id)});return m;
+}
+function guessDate(st,tur){const td=today(),items=takvimItems(st,addD(td,-28),td,td);if(!items.length)return null;const m=matchTakvim(st,items);
+ for(let i=items.length-1;i>=0;i--)if(!m.has(i)&&(kind(items[i].ad)==='AYT')===(tur==='AYT'))return items[i];return null}
+const relDay=n=>n===0?'Bugün':n===1?'Yarın':n>0?`${n} gün sonra`:`${-n} gün önce`;
+const tkRow=(x,extra)=>{const d=pd(x.tarih);return `<div class="tk"><div class="tk-d"><b>${d.getDate()}</b><span>${AY[d.getMonth()]}</span></div><div class="tk-b"><div class="t">${esc(tkAd(x))}</div><div class="muted">${GUN[d.getDay()]}${x.saat?' '+esc(x.saat):''} · ${relDay(dayDiff(x.tarih,today()))}</div></div>${extra||''}</div>`};
+function tkBtn(st,x,lab){return `<button class="btn sm" data-act="tk-add" data-tur="${kind(x.ad)==='AYT'?'AYT':''}" data-tarih="${x.tarih}" data-ad="${esc([x.yer,x.ad].filter(Boolean).join(' '))}">${lab}</button>`}
+function takvimCard(st){
+ const t=st.takvim||{};if(!(t.liste||[]).length&&!(t.tekrar||[]).length)return '';
+ const td=today(),items=takvimItems(st,'2000-01-01','2100-01-01',addD(td,70)),m=matchTakvim(st,items),all=items.map((x,i)=>({x,i}));
+ const up=all.filter(o=>o.x.tarih>=td).slice(0,4);
+ const miss=all.filter(o=>o.x.tarih<td&&!m.has(o.i)&&dayDiff(td,o.x.tarih)<=45);
+ const lst=all.filter(o=>!o.x.haftalik);
+ const full=lst.length?`<details class="tkall"><summary>Tüm takvim (${lst.length} sınav · ${lst.filter(o=>m.has(o.i)).length} sonuç girildi)</summary><div class="tscroll"><table><thead><tr><th>Tarih</th><th style="text-align:left">Gün</th><th style="text-align:left">Sınav</th><th>Durum</th></tr></thead><tbody>${lst.map(o=>{const e=m.get(o.i);return `<tr><td>${fdate(o.x.tarih)}</td><td style="text-align:left">${GUN[pd(o.x.tarih).getDay()]}</td><td style="text-align:left">${esc(o.x.ad)}</td><td>${e?`<span class="ok">✓ ${tf(withT(exT(st,e),()=>tot(e).n))} net</span>`:o.x.tarih<td?tkBtn(st,o.x,'+ Ekle'):'<span class="muted">bekliyor</span>'}</td></tr>`}).join('')}</tbody></table></div></details>`:'';
+ return `<div class="card"><h2>Sınav takvimi${t.yer?`<small>${esc(t.yer)}</small>`:''}</h2><div class="tkup">${up.length?up.map(o=>tkRow(o.x,m.has(o.i)?'<span class="ok">✓ girildi</span>':'')).join(''):'<p class="muted">Yaklaşan deneme yok.</p>'}</div>`
+  +(miss.length?`<div class="sec">Sonucu girilmeyenler</div><div class="tkup">${miss.map(o=>tkRow(o.x,tkBtn(st,o.x,'+ Sonucu ekle'))).join('')}</div>`:'')+full+`</div>`;
+}
+function takvimFields(st){const t=(st&&st.takvim)||{},r=(t.tekrar||[])[0]||{};
+ return `<div class="sec">Sınav takvimi</div>
+ <div class="f"><label>Haftalık deneme<select name="tk_gun"><option value="">Yok</option>${GUN.map((g,i)=>`<option value="${i}" ${r.gun===i?'selected':''}>Her ${g}</option>`).join('')}</select></label>
+ <label>Saat<input name="tk_saat" type="time" value="${esc(r.saat||'')}"></label><label class="w2">Yer<input name="tk_yer" value="${esc(r.yer||'')}" placeholder="Ör. 5 Yıldız Kurs Merkezi"></label></div>
+ <div class="f"><label style="grid-column:1/-1">Tarihli sınavların kurumu<input name="tk_kurum" value="${esc(t.yer||'')}" placeholder="Ör. Tek Genç Akademi"></label>
+ <label style="grid-column:1/-1">Tarihli sınavlar (her satıra bir tane: GG.AA.YYYY Sınav adı)<textarea name="tk_liste" rows="6" placeholder="06.12.2026 TYT 7">${esc((t.liste||[]).map(x=>fdate(x.tarih)+' '+x.ad).join('\n'))}</textarea></label></div>`}
+function readTakvim(st){const v=n=>((mroot.querySelector(`[name=${n}]`)||{}).value||'').trim(),old=(st&&st.takvim)||{},t={};
+ const g=v('tk_gun');if(g!==''){const o=(old.tekrar||[])[0];t.tekrar=[{gun:+g,saat:v('tk_saat'),yer:v('tk_yer'),ad:'Deneme',bas:o&&o.gun===+g?o.bas:today()}]}
+ const liste=[];v('tk_liste').split('\n').forEach(l=>{const m=l.trim().match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})\s*(.*)$/);if(m)liste.push({tarih:`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`,ad:m[4].trim()||'Deneme'})});
+ if(liste.length)t.liste=liste.sort((a,b)=>a.tarih<b.tarih?-1:1);if(v('tk_kurum'))t.yer=v('tk_kurum');return t}
+function migrate(){
+ const v0=STATE.version||0;if(v0>=4)return;
+ if(v0<3){
+ const merge=(sid,keepId,dropIds,patch)=>{const st=stById(sid);if(!st)return;const keep=st.exams.find(e=>e.id===keepId);if(!keep)return;st.seen=st.seen||[];
+  dropIds.forEach(id=>{const d=st.exams.find(e=>e.id===id);if(!d)return;
+   ['sira','kurumOrtNet','ortPuan','yuzdelik'].forEach(k=>{if(keep[k]==null&&d[k]!=null)keep[k]=d[k]});
+   if(!keep.src&&d.src)keep.src=d.src;else if(d.src&&d.src.fileId&&!st.seen.includes(d.src.fileId))st.seen.push(d.src.fileId);
+   st.exams=st.exams.filter(e=>e.id!==id)});
+  Object.assign(keep,patch||{})};
+ merge('umut','e1',['bou9zqo6']);
+ merge('umut','e2',['trirb940'],{ad:'Tek Genç VİP TYT-2'});
+ merge('umut','e6',['mkp1s1pq','73slye92'],{ad:'Eksen TYT-4',tarih:'2026-11-14'});
+ merge('arya','ysnm1c6w',['7enfp19h']);
+ const u=stById('umut');if(u&&!u.takvim)u.takvim={yer:'Tek Genç Akademi',liste:[{"tarih":"2026-08-17","ad":"TYT"},{"tarih":"2026-09-11","ad":"TYT 1"},{"tarih":"2026-09-27","ad":"TYT 2"},{"tarih":"2026-10-11","ad":"TYT 3"},{"tarih":"2026-10-24","ad":"TYT 4"},{"tarih":"2026-11-08","ad":"TYT 5"},{"tarih":"2026-11-14","ad":"TYT 6"},{"tarih":"2026-11-15","ad":"AYT 1"},{"tarih":"2026-11-29","ad":"AYT 2"},{"tarih":"2026-12-06","ad":"TYT 7"},{"tarih":"2026-12-20","ad":"AYT 3"},{"tarih":"2027-01-10","ad":"TYT 8"},{"tarih":"2027-01-17","ad":"AYT 4"},{"tarih":"2027-02-14","ad":"TYT 9"},{"tarih":"2027-02-21","ad":"AYT 5"},{"tarih":"2027-02-28","ad":"TYT 10"},{"tarih":"2027-03-21","ad":"TYT 11"},{"tarih":"2027-03-28","ad":"AYT 6"},{"tarih":"2027-04-04","ad":"TYT 12"},{"tarih":"2027-04-11","ad":"AYT 7"},{"tarih":"2027-04-18","ad":"TYT 13"},{"tarih":"2027-04-25","ad":"AYT 8"},{"tarih":"2027-05-02","ad":"TYT 14"},{"tarih":"2027-05-09","ad":"AYT 9"},{"tarih":"2027-05-23","ad":"TYT 15"},{"tarih":"2027-05-30","ad":"AYT 10"},{"tarih":"2027-06-05","ad":"TYT 16"},{"tarih":"2027-06-06","ad":"AYT 11"},{"tarih":"2027-06-08","ad":"TYT 17"},{"tarih":"2027-06-09","ad":"AYT 12"},{"tarih":"2027-06-12","ad":"TYT 18"},{"tarih":"2027-06-13","ad":"AYT 13"},{"tarih":"2027-06-15","ad":"TYT 19"},{"tarih":"2027-06-16","ad":"AYT 14"},{"tarih":"2027-06-17","ad":"TYT 20"},{"tarih":"2027-06-18","ad":"AYT 15"}]};
+ const a=stById('arya');if(a&&!a.takvim)a.takvim={tekrar:[{gun:6,saat:'14:00',yer:'5 Yıldız Kurs Merkezi',ad:'Deneme',bas:'2026-11-21'}]};
+ }
+ {const a=stById('arya');if(a){const D={mm0o4dtd:['2026-11-14','Premium Gelişim 01'],yfbj8e9o:['2026-11-07','Bilfen Süreç İzleme-1'],'2e2aib9i':['2026-10-31','Kafa Dengi Starter DES 01'],tqf1k6ir:['2026-10-24','Fenomen Süreç İzleme-1'],almeqgig:['2026-10-17','Beş Yıldız 8. Sınıf-1'],ysnm1c6w:['2026-10-10','Eksen DES 01']};
+  a.exams.forEach(e=>{const d=D[e.id];if(d&&e.tarih==='2026-11-18'){e.tarih=d[0];e.ad=d[1]}});const r=a.takvim&&a.takvim.tekrar&&a.takvim.tekrar[0];if(r&&r.bas>'2026-10-10')r.bas='2026-10-10'}}
+ STATE.version=4;
+}
+
+/* ---------- trash & monthly report ---------- */
+const AYLAR=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const ayAd=m=>AYLAR[+m.slice(5,7)-1]+' '+m.slice(0,4);
+function trashModal(st){
+ const tr=st.trash||[];
+ const rows=tr.map(e=>{const n=withT(exT(st,e),()=>tot(e).n);return `<div class="imp"><div class="b"><div class="t">${fdate(e.tarih)} · ${esc(e.ad)}${isYKS(st)?' · '+exT(st,e):''}</div><div class="muted" style="font-size:12px">${tf(n)} net${e.puan!=null?' · '+tf(e.puan)+' puan':''} · silinme: ${fdate(e.silindi)}</div></div><button class="btn sm" data-act="tr-restore" data-id="${e.id}">Geri al</button><button class="btn sm danger" data-act="tr-del" data-id="${e.id}">Kalıcı sil</button></div>`}).join('');
+ editing={type:'trash',sid:st.id};
+ openModal(`<h3>🗑 Çöp kutusu · ${esc(st.ad.split(' ')[0])}</h3><p class="muted" style="margin-top:-8px;font-size:13px">Silinen denemeler burada durur. Geri alabilir ya da kalıcı olarak silebilirsiniz.</p>${rows||'<p class="muted">Çöp kutusu boş.</p>'}
+ <div class="mfoot">${tr.length?'<button class="btn danger" data-act="tr-empty">Çöp kutusunu boşalt</button>':''}<div class="r"><button class="btn" data-act="close">Kapat</button></div></div>`);
+}
+let REPTXT='';
+function reportModal(st,m){
+ useT(st);const all=sorted(st);
+ const months=[...new Set(all.map(e=>e.tarih.slice(0,7)))].sort().reverse();
+ if(!months.length){toast('Rapor için önce deneme ekleyin');return}
+ m=months.includes(m)?m:months[0];
+ const pm=months[months.indexOf(m)+1]||null;
+ const ex=all.filter(e=>e.tarih.slice(0,7)===m),pex=pm?all.filter(e=>e.tarih.slice(0,7)===pm):[];
+ const nets=ex.map(e=>tot(e).n),avgN=mean(nets),pavgN=pex.length?mean(pex.map(e=>tot(e).n)):null;
+ const pu=ex.map(e=>e.puan).filter(x=>x!=null),ppu=pex.map(e=>e.puan).filter(x=>x!=null);
+ const avgP=mean(pu),pavgP=ppu.length?mean(ppu):null;
+ const best=ex[nets.indexOf(Math.max(...nets))];
+ const items=takvimItems(st,m+'-01',m+'-31',m+'-31').filter(x=>x.tarih<=today()&&(!isYKS(st)||(kind(x.ad)||'TYT')===VIEW));const mt=matchTakvim(st,items);
+ const gs=T.groups.map(g=>{const c=mean(ex.map(e=>gNet(e,g.k))),p=pex.length?mean(pex.map(e=>gNet(e,g.k))):null;return {...g,c,p,d:p==null?null:c-p,pct:Math.max(0,c/g.s*100)}});
+ const strong=gs.reduce((a,b)=>b.pct>a.pct?b:a),weak=gs.reduce((a,b)=>b.pct<a.pct?b:a);
+ const wd=gs.filter(g=>g.d!=null),up=wd.length?wd.reduce((a,b)=>b.d>a.d?b:a):null,down=wd.length?wd.reduce((a,b)=>b.d<a.d?b:a):null;
+ const tit=`${st.ad} · ${T.key} · ${ayAd(m)}`;
+ const notes=[`En güçlü: ${strong.ad} (%${tf(strong.pct,0)})`,`Geliştirilmesi gereken: ${weak.ad} (%${tf(weak.pct,0)})`];
+ if(up&&up.d>0.01)notes.push(`En çok artan: ${up.ad} (+${tf(up.d)} net)`);
+ if(down&&down.d<-0.01)notes.push(`En çok düşen: ${down.ad} (${tf(down.d)} net)`);
+ const planTxt=items.length?`Takvimdeki ${items.length} denemeden ${mt.size} tanesinin sonucu girildi`:'';
+ const sr=e=>siraList(e).slice(0,2).map(x=>`${x.l} ${ti(x.s)}${x.n?'/'+ti(x.n):''}`).join(' · ');
+ REPTXT=`📊 ${tit}\n\n• Deneme sayısı: ${ex.length}${items.length?` (takvimde ${items.length})`:''}\n• Ortalama net: ${tf(avgN)}${pavgN!=null?` (önceki ay ${tf(pavgN)}, ${avgN-pavgN>=0?'+':''}${tf(avgN-pavgN)})`:''}\n`
+  +(avgP!=null?`• Ortalama puan: ${tf(avgP)}${pavgP!=null?` (önceki ay ${tf(pavgP)}, ${avgP-pavgP>=0?'+':''}${tf(avgP-pavgP)})`:''}\n`:'')
+  +`• En iyi deneme: ${best.ad} · ${tf(tot(best).n)} net\n\nDers ortalamaları:\n`+gs.map(g=>`• ${g.ad}: ${tf(g.c)} / ${g.s}${g.d!=null?` (${g.d>=0?'+':''}${tf(g.d)})`:''}`).join('\n')
+  +`\n\n${notes.map(n=>'• '+n).join('\n')}\n\nDenemeler:\n`+ex.map(e=>`• ${fdate(e.tarih)} ${e.ad}: ${tf(tot(e).n)} net${e.puan!=null?' · '+tf(e.puan)+' puan':''}${sr(e)?' · '+sr(e):''}`).join('\n');
+ editing={type:'report',sid:st.id};
+ openModal(`<div class="rephead"><h3 style="margin:0">📊 Aylık rapor · ${esc(st.ad.split(' ')[0])}${isYKS(st)?' · '+T.key:''}</h3><select id="rep-month">${months.map(x=>`<option value="${x}" ${x===m?'selected':''}>${ayAd(x)}</option>`).join('')}</select></div>
+ <div class="kpis" style="margin-top:14px">
+ <div class="kpi"><div class="l">Deneme</div><div class="v">${ex.length}</div><div class="s">${planTxt||ayAd(m)}</div></div>
+ <div class="kpi"><div class="l">Ortalama net</div><div class="v">${tf(avgN)}${delta(avgN,pavgN)}</div><div class="s">${pm?'önceki ay '+tf(pavgN):'ilk ay'}</div></div>
+ <div class="kpi"><div class="l">Ortalama puan</div><div class="v">${tf(avgP)}${delta(avgP,pavgP)}</div><div class="s">${pavgP!=null?'önceki ay '+tf(pavgP):'—'}</div></div>
+ <div class="kpi"><div class="l">En iyi deneme</div><div class="v">${tf(tot(best).n)}</div><div class="s">${esc(best.ad)}</div></div></div>
+ <div class="tscroll"><table><thead><tr><th>Ders</th><th>Soru</th><th>Bu ay</th><th>${pm?esc(AYLAR[+pm.slice(5,7)-1]):'Önceki ay'}</th><th>Değişim</th><th>Başarı</th></tr></thead><tbody>
+ ${gs.map(g=>`<tr><td><span class="dot" style="background:${css(GCOL[g.k])}"></span>${g.ad}</td><td>${g.s}</td><td>${tf(g.c)}</td><td>${tf(g.p)}</td><td>${g.d==null?'—':delta(g.c,g.p)}</td><td>%${tf(g.pct,0)}<span class="bar"><i style="width:${Math.min(100,g.pct)}%;background:${css(GCOL[g.k])}"></i></span></td></tr>`).join('')}</tbody></table></div>
+ <ul class="insights" style="margin-top:12px">${notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul>
+ <div class="sec">Bu ayın denemeleri</div>
+ <div class="tscroll"><table><thead><tr><th>Tarih</th><th style="text-align:left">Deneme</th><th>Net</th><th>Puan</th><th>Sıralama</th></tr></thead><tbody>${ex.map(e=>`<tr><td>${fdate(e.tarih)}</td><td class="name">${esc(e.ad)}</td><td><b>${tf(tot(e).n)}</b></td><td>${tf(e.puan)}</td><td class="muted">${sr(e)||'—'}</td></tr>`).join('')}</tbody></table></div>
+ <div class="mfoot"><span class="muted" style="font-size:12px">Rapor metnini WhatsApp'a ya da e-postaya yapıştırabilirsiniz.</span><div class="r"><button class="btn" data-act="close">Kapat</button><button class="btn pri" data-act="rep-copy">Raporu kopyala</button></div></div>`);
+}
+
+/* ---------- backup / restore ---------- */
+async function backup(){
+ const txt=JSON.stringify(STATE),name=`deneme-takip-yedek-${today()}.json`;
+ const file=new File([txt],name,{type:'application/json'});
+ const touch=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
+ if(touch&&navigator.canShare&&navigator.canShare({files:[file]})){
+  try{await navigator.share({files:[file],title:'Deneme Takip yedeği'});return}catch(e){if(e&&e.name==='AbortError')return}}
+ const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();
+ setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);toast('Yedek dosyası indirildi');
+}
+function restoreModal(){
+ editing={type:'restore'};
+ const has=STATE.students.length;
+ openModal(`<h3>📥 Yedekten yükle</h3>
+ <p class="muted" style="margin-top:-6px;font-size:13px">Yedek dosyasını seçin ya da Claude'daki uygulamadan kopyaladığınız veriyi aşağıya yapıştırın.${has?' <b>Bu cihazdaki mevcut veriler yedektekilerle değiştirilir.</b>':''}</p>
+ <div class="fill" style="display:flex!important"><label class="btn">📄 Yedek dosyası seç<input type="file" accept=".json,application/json,text/plain" id="restfile" hidden></label><span id="restmsg" class="muted"></span></div>
+ <textarea class="json" id="resttxt" placeholder='{"version":4,"students":[...]}'></textarea>
+ <div class="err" id="merr"></div>
+ <div class="mfoot"><div class="r"><button class="btn" data-act="close">İptal</button><button class="btn pri" data-act="restore-go">Yükle</button></div></div>`);
+}
+function restoreGo(){
+ const err=document.getElementById('merr');let d;
+ try{d=JSON.parse(document.getElementById('resttxt').value.trim())}catch(e){err.textContent='Veri okunamadı. Kopyaladığınız metnin tamamını yapıştırdığınızdan emin olun.';return}
+ if(!d||!Array.isArray(d.students)){err.textContent='Bu bir Deneme Takip yedeği değil.';return}
+ STATE=d;migrate();activeId=(STATE.students[0]||{}).id||null;closeModal();commit();
+ const n=STATE.students.reduce((a,s)=>a+s.exams.length,0);toast(`${STATE.students.length} öğrenci, ${n} deneme yüklendi`);
+}
+
+let activeId=null;try{activeId=localStorage.getItem('dt_active')}catch(e){}
+const active=()=>stById(activeId)||STATE.students[0]||null;
+function setActive(id){activeId=id;try{localStorage.setItem('dt_active',id)}catch(e){}render()}
+
+/* ---------- capabilities ---------- */
+const CU=n=>(window.claude&&claude.use)?claude.use(n).catch(()=>null):Promise.resolve(null);
+let ART=null,MCP=null,SAMPLE=null,statusTxt='',statusCls='';
+function setStatus(t,c){statusTxt=t;statusCls=c||'';const s=document.getElementById('status');if(s){s.textContent=t;s.className=statusCls}}
+
+CU('mcp').then(m=>{MCP=m});
+CU('sample').then(s=>{SAMPLE=s});
+
+function buildHtml(){
+ const C='</'+'script>';
+ const json=JSON.stringify(STATE).replace(/</g,'\\u003c');
+ return '<!DOCTYPE html>\n<html lang="tr">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Deneme Takip</title>\n'
+ +'<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">\n'
+ +'<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js">'+C+'\n'
+ +'<style id="css">'+document.getElementById('css').textContent+'</style>\n</head>\n<body>\n<div class="wrap" id="app"></div>\n<div id="modal-root"></div>\n'
+ +'<script type="application/json" id="state">'+json+C+'\n'
+ +'<script id="main">'+document.getElementById('main').textContent+C+'\n</body>\n</html>\n';
+}
+async function persist(){
+ try{localStorage.setItem(STORE,JSON.stringify(STATE));localStorage.setItem(STORE+'_t',new Date().toISOString());setStatus('Kaydedildi ✓')}
+ catch(e){setStatus('Kaydedilemedi: tarayıcı depolaması kapalı olabilir (gizli sekme?)','warn')}
+}
+function commit(){render();persist()}
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2400)}
+
+/* ---------- render ---------- */
+let charts=[];
+function render(){
+ charts.forEach(c=>c.destroy());charts=[];
+ const st=active();useT(st);
+ const tabs=STATE.students.map(s=>`<button class="chip ${st&&s.id===st.id?'on':''}" data-act="tab" data-id="${s.id}">${esc(s.ad.split(' ')[0])}<small>${esc(s.tur==='TYT'?'YKS':(s.tur||''))}</small></button>`).join('');
+ app.innerHTML=`<header><div class="brand">Deneme Takip</div><div class="tabs">${tabs}</div><div id="status" class="${statusCls}">${esc(statusTxt)}</div></header>`
+  +(st?studentView(st):`<div class="card welcome"><h2>Deneme Takip'e hoş geldiniz</h2><p>Önceki verilerinizi yedekten yükleyin ya da yeni öğrenci ekleyin.</p><button class="btn pri" data-act="restore">📥 Yedekten yükle</button> <button class="btn" data-act="add-student">+ Öğrenci ekle</button></div>`);
+ if(st)drawCharts(st);
+}
+function delta(v,p,d=2,inv=false){if(p==null||v==null)return'';const x=v-p;const good=inv?x<-0.0001:x>0.0001,bad=inv?x>0.0001:x<-0.0001;return `<span class="delta ${good?'up':bad?'down':''}">${x>0.0001?'▲':x<-0.0001?'▼':'•'} ${tf(Math.abs(x),d)}</span>`}
+
+function studentView(st){
+ const ex=sorted(st);
+ const head=`<div class="top"><div><h1>${esc(st.ad)}</h1><div class="sub">${esc([st.sinif,isYKS(st)?'YKS':st.tur,st.alan].filter(Boolean).join(' · '))}${st.hedef?` · Hedef: ${tf(st.hedef)} puan`:''} · ${ex.length} deneme</div></div>
+ ${isYKS(st)?`<div class="seg">${['TYT','AYT'].map(k=>`<button class="${VIEW===k?'on':''}" data-act="view" data-v="${k}">${k}</button>`).join('')}</div>`:''}
+ <div class="actions"><button class="btn" data-act="report" ${ex.length?'':'disabled'}>📊 Aylık rapor</button><button class="btn" data-act="backup">💾 Yedekle</button><button class="btn pri" data-act="add-exam">+ Deneme ekle</button><div class="menu"><button class="btn" data-act="menu" aria-label="Diğer">⋯</button><div class="pop" hidden><button data-act="edit-student">👤 Öğrenci bilgileri ve takvim</button><button data-act="copy-all" ${ex.length?'':'disabled'}>📋 Tüm denemeleri kopyala</button><button data-act="backup">💾 Yedeği kaydet / paylaş</button><button data-act="restore">📥 Yedekten yükle</button><button data-act="add-student">👥 Öğrenci ekle</button><button data-act="trash">🗑 Çöp kutusu${(st.trash||[]).length?` (${st.trash.length})`:''}</button></div></div></div></div>`;
+ if(!ex.length)return head+takvimCard(st)+`<div class="card empty">Bu öğrenci için henüz ${isYKS(st)?VIEW+' denemesi':'deneme'} yok.<br><br><button class="btn pri" data-act="add-exam">+ Deneme ekle</button></div>`;
+ const nets=ex.map(e=>tot(e).n),last=ex[ex.length-1],prev=ex[ex.length-2];
+ const lastN=nets[nets.length-1],prevN=prev?nets[nets.length-2]:null;
+ const bi=nets.indexOf(Math.max(...nets));
+ const puans=ex.map(e=>e.puan).filter(x=>x!=null);
+ const rankEx=[...ex].reverse().find(e=>siraList(e).length);
+ const yEx=[...ex].reverse().filter(e=>e.yuzdelik!=null);
+ let rk='';
+ if(rankEx){const L=siraList(rankEx),f=L[0];rk=`<div class="kpi"><div class="l">Son sıralama · ${esc(f.l)}</div><div class="v">${ti(f.s)}.${f.n?` <small>/ ${ti(f.n)}</small>`:''}</div><div class="s">${L.slice(1).map(x=>`${x.l} ${ti(x.s)}${x.n?'/'+ti(x.n):''}`).join(' · ')||fdate(rankEx.tarih)}</div></div>`}
+ const kpis=`<div class="kpis">
+ <div class="kpi"><div class="l">Son deneme neti</div><div class="v">${tf(lastN)}${delta(lastN,prevN)}</div><div class="s">${esc(last.ad)} · ${fdate(last.tarih)}</div></div>
+ <div class="kpi"><div class="l">Son ${T.puan}</div><div class="v">${tf(last.puan)}${delta(last.puan,prev?prev.puan:null)}</div><div class="s">${st.hedef&&last.puan!=null?(last.puan>=st.hedef?'Hedefin üstünde 🎯':`Hedefe ${tf(st.hedef-last.puan)} puan`):'önceki denemeye göre'}</div></div>
+ <div class="kpi"><div class="l">Ortalama net</div><div class="v">${tf(mean(nets))}</div><div class="s">Ort. puan ${tf(mean(puans))}</div></div>
+ <div class="kpi"><div class="l">En yüksek net</div><div class="v">${tf(nets[bi])}</div><div class="s">${esc(ex[bi].ad)} · ${fdate(ex[bi].tarih)}</div></div>
+ ${yEx.length?`<div class="kpi"><div class="l">Tahmini yüzdelik dilim</div><div class="v">%${tf(yEx[0].yuzdelik)}${delta(yEx[0].yuzdelik,yEx[1]?yEx[1].yuzdelik:null,2,true)}</div><div class="s">küçük olan daha iyi · ${fdate(yEx[0].tarih)}</div></div>`:''}
+ ${rk}</div>`;
+ return head+kpis+takvimCard(st)+insights(ex,nets)+`<div class="grid2">
+ <div class="card"><h2>Net ve puan gelişimi</h2><div class="chartbox"><canvas id="ch1"></canvas></div></div>
+ <div class="card"><h2>${T.chart2}</h2><div class="chartbox"><canvas id="ch2"></canvas></div></div></div>`
+ +lessonTable(ex)+examTable(ex);
+}
+function subjStats(ex){
+ return T.subj.map(s=>{const n=ex.map(e=>sNet(e,s.k));const b=ex.map(e=>{const x=dy(e,s.k);return s.s-x[0]-x[1]});const y=ex.map(e=>dy(e,s.k)[1]);
+  const avg=mean(n);return {...s,avg,last:n[n.length-1],best:Math.max(...n),bos:mean(b),yan:mean(y),pct:Math.max(0,avg/s.s*100)}});
+}
+function insights(ex,nets){
+ if(ex.length<2)return'';
+ const ss=subjStats(ex).filter(s=>s.s>=6);
+ const strong=ss.reduce((a,b)=>b.pct>a.pct?b:a);
+ const gs=T.groups.map(g=>({...g,avg:mean(ex.map(e=>gNet(e,g.k))),bos:mean(ex.map(e=>gBos(e,g.k))),yan:mean(ex.map(e=>gY(e,g.k)))}));
+ const weak=gs.reduce((a,b)=>(b.avg/b.s)<(a.avg/a.s)?b:a);
+ const bos=gs.reduce((a,b)=>(b.bos/b.s)>(a.bos/a.s)?b:a);
+ const yan=gs.reduce((a,b)=>(b.yan/b.s)>(a.yan/a.s)?b:a);
+ const n3=Math.min(3,nets.length-1),last3=mean(nets.slice(-n3)),first3=mean(nets.slice(0,n3));
+ const fourth=(bos.bos/bos.s)>=0.1
+  ?`<li><b>En çok boş bırakılan</b>${bos.ad}: ${bos.s} sorudan ortalama ${tf(bos.bos,1)} boş</li>`
+  :`<li><b>En çok yanlış yapılan</b>${yan.ad}: ${yan.s} sorudan ortalama ${tf(yan.yan,1)} yanlış${T.div===3?' (3 yanlış 1 doğruyu götürür)':''}</li>`;
+ return `<div class="card"><h2>Öne çıkanlar</h2><ul class="insights">
+ <li><b>Genel gidişat</b>${tf(nets[0])} → ${tf(nets[nets.length-1])} net. Son ${n3} deneme ortalaması ${tf(last3)}${delta(last3,first3)}</li>
+ <li><b>En güçlü ders</b>${strong.ad}: ortalama ${tf(strong.avg)} / ${strong.s} net (%${tf(strong.pct,0)})</li>
+ <li><b>En zayıf ${T.key==='TYT'?'bölüm':'ders'}</b>${weak.ad}: ortalama ${tf(weak.avg)} / ${weak.s} net</li>
+ ${fourth}</ul></div>`;
+}
+function lessonTable(ex){
+ const ss=subjStats(ex);let rows='';
+ T.groups.forEach(g=>{
+  const subs=ss.filter(s=>s.g===g.k);
+  const gn=ex.map(e=>gNet(e,g.k)),gb=ex.map(e=>gBos(e,g.k));
+  const avg=mean(gn),pct=Math.max(0,avg/g.s*100),col=css(GCOL[g.k]);
+  const row=(lab,s,cls,a,last,best,bos,p)=>`<tr class="${cls}"><td>${cls==='grp'?`<span class="dot" style="background:${col}"></span>`:''}${lab}</td><td>${s}</td><td class="${a<0?'neg':''}">${tf(a)}</td><td class="${last<0?'neg':''}">${tf(last)}${delta(last,a)}</td><td>${tf(best)}</td><td>${tf(bos,1)}</td><td>%${tf(p,0)}<span class="bar"><i style="width:${Math.min(100,p)}%;background:${col}"></i></span></td></tr>`;
+  if(subs.length===1){const s=subs[0];rows+=row(s.ad,s.s,'grp',s.avg,s.last,s.best,s.bos,s.pct)}
+  else{rows+=row(g.ad,g.s,'grp',avg,gn[gn.length-1],Math.max(...gn),mean(gb),pct);subs.forEach(s=>rows+=row(s.ad,s.s,'sub',s.avg,s.last,s.best,s.bos,s.pct))}
+ });
+ return `<div class="card"><h2>Ders analizi<small>${ex.length} deneme ortalaması · "Son" yanındaki ok ortalamaya göre</small></h2><div class="tscroll"><table>
+ <thead><tr><th>Ders</th><th>Soru</th><th>Ort. net</th><th>Son</th><th>En iyi</th><th>Ort. boş</th><th>Başarı</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+function examTable(ex){
+ const rows=[...ex].reverse().map(e=>{const t=tot(e);const r=siraList(e).slice(0,2).map(x=>`${x.l} ${ti(x.s)}${x.n?'/'+ti(x.n):''}`);
+  return `<tr class="click" data-act="edit-exam" data-id="${e.id}"><td>${fdate(e.tarih)}</td><td class="name">${esc(e.ad)}${e.src&&e.src.fileId?' <span class="muted" title="Drive\'dan alındı">☁︎</span>':''}${e.not?` <span class="muted" title="${esc(e.not)}">ⓘ</span>`:''}</td>
+  ${T.groups.map(g=>{const v=gNet(e,g.k);return `<td class="${v<0?'neg':''}">${tf(v)}</td>`}).join('')}<td>${t.d}/${t.y}</td><td><b>${tf(t.n)}</b></td><td>${tf(e.puan)}</td><td class="muted">${r.join(' · ')||'—'}</td></tr>`}).join('');
+ return `<div class="card"><h2>Denemeler<small>düzenlemek için satıra dokunun</small></h2><div class="tscroll"><table>
+ <thead><tr><th>Tarih</th><th>Deneme</th>${T.groups.map(g=>`<th>${g.kisa}</th>`).join('')}<th>D/Y</th><th>Net</th><th>Puan</th><th>Sıralama</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+function drawCharts(st){
+ if(!window.Chart)return;
+ const ex=sorted(st);if(!ex.length)return;
+ const labels=ex.map(e=>sdate(e.tarih));
+ const ink=css('--mut'),grid=css('--line');
+ Chart.defaults.font.family='Inter,system-ui,sans-serif';Chart.defaults.color=ink;
+ const tt={callbacks:{title:i=>{const e=ex[i[0].dataIndex];return e.ad+' · '+fdate(e.tarih)},label:c=>c.dataset.label+': '+tf(c.parsed.y)}};
+ const ds=[{label:'Toplam net',data:ex.map(e=>tot(e).n),borderColor:css('--pri'),backgroundColor:css('--pri'),yAxisID:'y',tension:.25,pointRadius:4},
+  {label:T.puan,data:ex.map(e=>e.puan??null),borderColor:css('--c-puan'),backgroundColor:css('--c-puan'),yAxisID:'y1',tension:.25,pointRadius:4,spanGaps:true}];
+ if(ex.some(e=>e.kurumOrtNet!=null))ds.push({label:'Kurum ort. net',data:ex.map(e=>e.kurumOrtNet??null),borderColor:ink,backgroundColor:ink,showLine:false,pointStyle:'rectRot',pointRadius:6,yAxisID:'y'});
+ if(ex.some(e=>e.ortPuan!=null))ds.push({label:'Şube/kurum ort. puan',data:ex.map(e=>e.ortPuan??null),borderColor:ink,backgroundColor:ink,showLine:false,pointStyle:'triangle',pointRadius:6,yAxisID:'y1'});
+ if(st.hedef)ds.push({label:'Hedef puan',data:ex.map(()=>st.hedef),borderColor:css('--c-puan'),borderDash:[5,5],pointRadius:0,borderWidth:1.5,yAxisID:'y1'});
+ const leg={labels:{boxWidth:10,boxHeight:10}};
+ charts.push(new Chart(document.getElementById('ch1'),{type:'line',data:{labels,datasets:ds},options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{tooltip:tt,legend:leg},
+  scales:{x:{grid:{display:false}},y:{title:{display:true,text:'Net'},grid:{color:grid}},y1:{position:'right',title:{display:true,text:'Puan'},grid:{display:false}}}}}));
+ charts.push(new Chart(document.getElementById('ch2'),{type:'line',data:{labels,datasets:T.groups.map(g=>({label:g.kisa+' ('+g.s+')',data:ex.map(e=>gNet(e,g.k)),borderColor:css(GCOL[g.k]),backgroundColor:css(GCOL[g.k]),tension:.25,pointRadius:3}))},
+  options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{tooltip:tt,legend:leg},scales:{x:{grid:{display:false}},y:{title:{display:true,text:'Net'},grid:{color:grid}}}}}));
+}
+
+/* ---------- summary text ---------- */
+function examText(e){
+ const t=tot(e);let s=`📅 ${fdate(e.tarih)} · ${e.ad}\n\n`;
+ T.subj.forEach(x=>{const a=dy(e,x.k);if(a[0]+a[1]===0)return;
+  const lab=T.key==='TYT'&&x.g==='sos'?`Sosyal Bilimler (${x.ad==='Din Kültürü'?'Din Kül.':x.ad})`:T.key==='TYT'&&x.k==='mat'?'Temel Matematik':x.ad;
+  s+=`• ${lab}: ${a[0]} Doğru / ${a[1]} Yanlış / ${tf(a[0]-a[1]/T.div)} Net\n`});
+ s+=`• TOPLAM: ${t.d} Doğru / ${t.y} Yanlış / ${tf(t.n)} Net\n`;
+ if(e.puan!=null)s+=`• ${T.puan.replace('puanı','Puanı')}: ${tf(e.puan)}\n`;
+ const r=siraList(e);if(r.length)s+=`• Sıralama: ${r.map(x=>`${x.l} ${ti(x.s)}${x.n?'/'+ti(x.n):''}`).join(' · ')}\n`;
+ if(e.yuzdelik!=null)s+=`• Tahmini yüzdelik: %${tf(e.yuzdelik)}\n`;
+ return s;
+}
+async function copyText(txt){
+ try{await navigator.clipboard.writeText(txt);toast('Panoya kopyalandı')}
+ catch(e){openModal(`<h3>Özeti kopyala</h3><p class="muted" style="margin-top:-6px">Metni seçip kopyalayın:</p><textarea rows="16" readonly>${esc(txt)}</textarea><div class="mfoot"><div class="r"><button class="btn" data-act="close">Kapat</button></div></div>`);
+  const ta=mroot.querySelector('textarea');ta.focus();ta.select()}
+}
+
+/* ---------- reading documents with Claude ---------- */
+const xerr=m=>Object.assign(new Error(m),{_x:true});
+function sampleMsg(e){const c=e&&e.code;
+ if(c==='not_granted')return 'Belge okuma izni verilmedi. Tekrar deneyip izin verebilirsiniz.';
+ if(c==='rate_limited')return 'Çok fazla istek gönderildi, birkaç dakika sonra tekrar deneyin.';
+ return 'Belge okunamadı'+(e&&e.message?' ('+e.message+')':'');}
+function clean(t){return (t||'').split('\n').filter(l=>!/^\s*<?https?:\/\//.test(l)&&!/Video çözüm/.test(l)).join('\n').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n')}
+function prompt(st){
+ const sp=k=>TYPES[k].subj.map(s=>`- "${s.k}": ${s.ad} (${s.s} soru)`).join('\n');
+ const spec=isYKS(st)?`TYT belgesi ise:\n${sp('TYT')}\n\nAYT (Sayısal) belgesi ise (matematik ve geometri ayrı verilmişse toplayıp "mat"a yaz; Türk dili-edebiyatı ve sosyal testlerini atla):\n${sp('AYT')}`:sp(T.key);
+ return `Aşağıdaki belge bir ${isYKS(st)?'YKS (TYT veya AYT)':T.key} deneme sınavı sonuç belgesidir (öğrenci karnesi ya da sınıf/kurum sonuç listesi olabilir).
+Öğrenci: "${st.ad}"${st.sinif?` (sınıf/şube: ${st.sinif})`:''}.
+
+Görev: Belgenin başlığındaki ANA sınavda bu öğrencinin sonuçlarını çıkar.
+- Belge birçok öğrencinin listelendiği bir tabloysa yalnızca bu öğrencinin satırını kullan.
+- İsim eşleştirme: Listelerde ad "AD SOYAD" (ör. ${st.ad.toLocaleUpperCase('tr')}) ya da "SOYAD AD" (ör. ${(w=>[w[w.length-1],...w.slice(0,-1)].join(' '))(st.ad.trim().split(/\s+/)).toLocaleUpperCase('tr')}) sırasıyla yazılmış olabilir; iki sırayı da kabul et. İkinci ad (ör. "Umut Cem") bazen eksik ya da kısaltılmış olabilir. Büyük/küçük harf ve Türkçe karakter (İ/I, Ş/S, Ü/U, Ö/O, Ç/C, Ğ/G) farklarını önemseme. Aynı soyadlı birden fazla öğrenci varsa ad tam eşleşen satırı seç; emin değilsen {"bulundu":false} döndür.
+- "Son 4 sınav", "geçmiş sınavlar" gibi özet tablolardaki diğer sınavları KULLANMA.
+- Öğrenci belgede yoksa {"bulundu":false} döndür.
+- Belgede sınav tarihi yoksa tarih null olsun; rapor/baskı tarihini sınav tarihi olarak yazma.
+
+Ders anahtarları (r içinde yalnızca bunları kullan; doğru ve yanlış sayısı):
+${spec}
+
+Yalnızca şu biçimde JSON döndür:
+{"bulundu":true,"tur":"${isYKS(st)?'TYT veya AYT':T.key}","tarih":"YYYY-MM-DD","ad":"yayın ve sınav adı (kısa, sınıf ve dönem bilgisi olmadan)","r":{"tr":[dogru,yanlis]},"toplamNet":sayı veya null,"puan":sayı veya null,
+"sira":{"sube":[sıra,katılım],"kurum":[sıra,katılım],"ilce":[sıra,katılım],"il":[sıra,katılım],"genel":[sıra,katılım]},
+"yuzdelik":sayı veya null,"ortPuan":sayı veya null,"kurumOrtNet":sayı veya null,"not":"kısa ek bilgi veya boş"}
+
+Kurallar:
+- tarih: sınavın tarihi (YYYY-MM-DD) ya da null.
+- puan: TYT belgesinde TYT puanı, AYT belgesinde SAY (sayısal) puanı, LGS belgesinde LGS puanı.
+- Sayılarda ondalık ayıracı nokta olsun (484.73). Belgede olmayan dersi r'ye ekleme; olmayan alanı null bırak, sira'da olmayan düzeyi hiç yazma.
+- sira: "Şube" veya öğrencinin kendi sınıfı (ör. 12-SAY4) → sube; "Kurum", "Okul" veya okulun tüm sınıf düzeyi → kurum; İlçe → ilce; İl → il; Genel/Türkiye → genel. Katılım bilinmiyorsa null.
+- yuzdelik: birden fazla yıl için tahmini yüzdelik dilim varsa en güncel yılınkini yaz, diğerlerini not alanına ekle.
+- ortPuan: öğrencinin şubesinin (yoksa kurumun) ortalama puanı. kurumOrtNet: kurum ortalama toplam neti.
+- not: ÖSYM tahmini sıralama, diğer yılların yüzdelikleri gibi kısa ve faydalı bilgiler.`;
+}
+async function extract(st,text,imgs=[]){
+ useT(st);
+ if(!SAMPLE)throw xerr('Belge okuma bu görünümde kullanılamıyor. Sayfayı claude.ai üzerinde açın.');
+ const opts={modelTier:'default',cache:false};
+ if(imgs.length){let lim=null;try{lim=await SAMPLE.limits()}catch(_){}
+  if(lim&&lim.images)opts.images=imgs.slice(0,2);else if(!text.trim())throw xerr('Fotoğraf okuma bu görünümde desteklenmiyor.');}
+ const input=prompt(st)+(text.trim()?'\n\nBELGE METNİ:\n"""\n'+text.slice(0,60000)+'\n"""':'\n\nBelge ekteki görüntüdedir.');
+ try{return await SAMPLE.json(input,opts)}catch(e){throw xerr(sampleMsg(e))}
+}
+function normalize(x,st){
+ const tur=isYKS(st)?(x&&x.tur==='AYT'?'AYT':'TYT'):st.tur;T=TYPES[tur]||TYPES.TYT;const warn=[],r={},R=(x&&x.r)||{};
+ const nn=v=>(v==null||v===''||isNaN(+v))?null:+v;
+ T.subj.forEach(s=>{const v=R[s.k];if(!Array.isArray(v))return;let d=Math.max(0,Math.round(+v[0]||0)),y=Math.max(0,Math.round(+v[1]||0));
+  if(d+y>s.s){warn.push(`${s.ad}: doğru+yanlış soru sayısını aşıyor`);d=Math.min(d,s.s);y=Math.max(0,s.s-d)}if(d||y)r[s.k]=[d,y]});
+ const gd=validDate(x.tarih)?null:guessDate(st,tur);const e={id:uid(),tarih:validDate(x.tarih)||(gd?gd.tarih:today()),ad:String(x.ad||'Deneme').trim().slice(0,120),r};if(isYKS(st))e.tur=tur;
+ if(gd)warn.push(`Belgede sınav tarihi yok; takvime göre ${fdate(gd.tarih)} (${tkAd(gd)}) yazıldı, kontrol edin`);else if(!validDate(x.tarih))warn.push('Belgede sınav tarihi yok, bugünün tarihi yazıldı: düzeltin');
+ if(nn(x.puan)!=null)e.puan=nn(x.puan);
+ const sira={};SIRA.forEach(([k])=>{const v=x.sira&&x.sira[k];if(Array.isArray(v)&&nn(v[0])!=null)sira[k]=[nn(v[0]),nn(v[1])]});if(Object.keys(sira).length)e.sira=sira;
+ ['yuzdelik','ortPuan','kurumOrtNet'].forEach(k=>{if(nn(x[k])!=null)e[k]=nn(x[k])});
+ if(x.not&&String(x.not).trim())e.not=String(x.not).trim().slice(0,300);
+ const cn=tot(e).n,tn=nn(x.toplamNet);
+ if(!Object.keys(r).length)warn.push('Ders sonuçları okunamadı');
+ else if(tn!=null&&Math.abs(tn-cn)>0.06)warn.push(`Belgedeki toplam net ${tf(tn)}, hesaplanan ${tf(cn)}: kontrol edin`);
+ const dup=st.exams.some(o=>exT(st,o)===tur&&((o.tarih===e.tarih&&Math.abs(tot(o).n-cn)<0.01)||(e.puan!=null&&o.puan!=null&&Math.abs(o.puan-e.puan)<0.01)));
+ if(dup)warn.push('Bu deneme zaten kayıtlı görünüyor');
+ return {exam:e,warn,dup};
+}
+
+/* PDF text from a local file (pdf.js) */
+let pdfReady=null;
+const loadScript=src=>new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(xerr('PDF okuyucu yüklenemedi'));document.head.appendChild(s)});
+function loadPdf(){if(!pdfReady){const B='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+ pdfReady=loadScript(B+'pdf.worker.min.js').then(()=>loadScript(B+'pdf.min.js')).then(()=>{const L=window.pdfjsLib||window['pdfjs-dist/build/pdf'];if(!L)throw xerr('PDF okuyucu yüklenemedi');L.GlobalWorkerOptions.workerSrc=B+'pdf.worker.min.js';return L}).catch(e=>{pdfReady=null;throw e})}
+ return pdfReady}
+const timeout=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(xerr('PDF okunurken zaman aşımı')),ms))]);
+async function pdfExtract(file){
+ const L=await loadPdf();const doc=await timeout(L.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise,30000);
+ let text='';
+ for(let i=1;i<=Math.min(doc.numPages,6);i++){const p=await doc.getPage(i);const c=await p.getTextContent();let lastY=null,line=[];const lines=[];
+  c.items.forEach(it=>{const y=Math.round(it.transform[5]);if(lastY!==null&&Math.abs(y-lastY)>3){lines.push(line.join(' '));line=[]}line.push(it.str);lastY=y});lines.push(line.join(' '));text+=lines.join('\n')+'\n\n'}
+ const imgs=[];
+ if(text.replace(/\s/g,'').length<300){for(let i=1;i<=Math.min(doc.numPages,2);i++){const p=await doc.getPage(i);const vp=p.getViewport({scale:2});const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
+  await p.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;imgs.push(await new Promise(r=>cv.toBlob(r,'image/png')))}}
+ return {text,imgs};
+}
+
+/* ---------- Google Drive import ---------- */
+const DRIVE='Google Drive';
+function mcpMsg(e){const c=e&&e.code;switch(c){
+ case 'needs_reauth':return 'Google Drive bağlantısının süresi dolmuş. claude.ai → Ayarlar → Bağlayıcılar bölümünden yeniden bağlayın.';
+ case 'server_not_connected':case 'server_not_found':return 'Google Drive bağlı değil. claude.ai → Ayarlar → Bağlayıcılar bölümünden ekleyin.';
+ case 'selection_required':return 'Birden fazla Google Drive bağlantısı var. Açılan pencereden birini seçip tekrar deneyin.';
+ case 'not_in_manifest':case 'approval_required':case 'consent_required':return 'Drive erişimine izin verilmedi. Tekrar deneyip izin verebilirsiniz.';
+ case 'blocked_by_policy':return 'Drive erişimi kuruluş ayarlarınca engellenmiş.';
+ case 'server_unavailable':case 'rate_limited':return 'Google Drive şu an yanıt vermiyor, biraz sonra tekrar deneyin.';
+ case 'not_granted':case 'capability_disabled':case 'capability_removed':return 'Bu görünümde Drive erişimi yok. Sayfayı claude.ai üzerinde açın.';
+ case 'tool_error':return 'Drive bir hata döndürdü: '+(e.message||'');
+ default:return e&&e._x?e.message:'Drive\'a ulaşılamadı ('+((e&&(c||e.message))||'bilinmeyen hata')+').';}}
+async function drive(tool,input,retried){
+ try{const r=await MCP.callTool(DRIVE,tool,input);let p=r.payload;if(typeof p==='string'){try{p=JSON.parse(p)}catch(_){}}return p}
+ catch(e){if(e&&e.retryable&&!retried){await new Promise(r=>setTimeout(r,(e.retryAfterMs||1200)+Math.random()*800));return drive(tool,input,true)}throw e}
+}
+const q=s=>String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+let IMPORT=null;
+async function startImport(st,rescan){
+ IMPORT={sid:st.id,phase:'search',items:[],msg:'',view:'list',rescan:!!rescan,folder:st.folder};renderImport();
+ const done=m=>{IMPORT.phase='done';IMPORT.msg=m;renderImport()};
+ if(!MCP)return done('Bu görünümde Drive erişimi yok. Sayfayı claude.ai üzerinde açın.');
+ if(!SAMPLE)return done('Belge okuma bu görünümde kullanılamıyor. Sayfayı claude.ai üzerinde açın.');
+ try{
+  let folder=st.folder;const first=st.ad.trim().split(/\s+/)[0];
+  if(!folder){
+   const p=await drive('search_files',{query:`mimeType = 'application/vnd.google-apps.folder' and title contains '${q(first)}' and trashed = false`,excludeContentSnippets:true,pageSize:20});
+   const fs=(p&&p.files)||[],lo=s=>String(s||'').toLocaleLowerCase('tr').trim();
+   const f=fs.find(x=>lo(x.title)===lo(first))||fs.find(x=>lo(x.title)===lo(st.ad))||fs[0];
+   if(!f)return done(`Drive'da "${first}" adlı klasör bulunamadı. Drive'da bu adla bir klasör açıp sonuç PDF'lerini içine koyun, sonra tekrar deneyin.`);
+   folder={id:f.id,ad:f.title};
+  }
+  IMPORT.folder=folder;IMPORT.phase='list';renderImport();
+  let files=[],tok=null;
+  for(let i=0;i<5;i++){const inp={query:`'${q(folder.id)}' in ancestors and trashed = false and (mimeType = 'application/pdf' or mimeType contains 'image/')`,excludeContentSnippets:true,pageSize:100};if(tok)inp.pageToken=tok;
+   const p=await drive('search_files',inp);const fs=(p&&p.files)||[];if(!fs.length)break;files.push(...fs);tok=p.nextPageToken;if(!tok)break}
+  const seenIds=new Set();files=files.filter(f=>!seenIds.has(f.id)&&seenIds.add(f.id));
+  const known=new Set([...st.exams.map(e=>e.src&&e.src.fileId).filter(Boolean),...(st.trash||[]).map(e=>e.src&&e.src.fileId).filter(Boolean),...(rescan?[]:(st.seen||[]))]);
+  const fresh=files.filter(f=>!known.has(f.id)).sort((a,b)=>(a.createdTime||'')<(b.createdTime||'')?-1:1);
+  if(!fresh.length)return done(`"${folder.ad}" klasöründe yeni dosya yok${files.length?` (${files.length} dosyanın hepsi zaten işlenmiş)`:''}. Yeni karne/sonuç PDF'ini klasöre ekleyip tekrar deneyin.`);
+  IMPORT.items=fresh.map(f=>({file:{id:f.id,title:f.title},status:'wait'}));IMPORT.phase='read';renderImport();
+  for(const it of IMPORT.items){
+   if(!IMPORT||IMPORT.sid!==st.id)return;
+   it.status='loading';renderImport();
+   try{
+    const p=await drive('read_file_content',{fileId:it.file.id});
+    const text=typeof p==='string'?p:((p&&p.fileContent)||'');
+    if(text.replace(/\s/g,'').length<40)throw xerr('Dosyadan metin okunamadı (taranmış olabilir). Uygulamada "PDF veya fotoğraftan doldur" ile deneyin.');
+    const x=await extract(st,clean(text));
+    if(!x||x.bulundu===false){it.status='notfound';it.msg=x&&x.ayt?'AYT sonucu: uygulama şimdilik yalnızca TYT denemelerini takip ediyor.':`Belgede ${st.ad} bulunamadı`}
+    else{const n=normalize(x,st);n.exam.src={fileId:it.file.id,ad:it.file.title};it.exam=n.exam;it.warn=n.warn;it.dup=n.dup;it.status='ok';it.sel=!n.dup}
+   }catch(e){it.status='err';it.msg=e&&e._x?e.message:mcpMsg(e)}
+   if(IMPORT)renderImport();
+  }
+  if(IMPORT){IMPORT.phase='review';renderImport()}
+ }catch(e){if(IMPORT)done(mcpMsg(e))}
+}
+function renderImport(){
+ if(!IMPORT||IMPORT.view!=='list')return;
+ const st=stById(IMPORT.sid);useT(st);
+ const ph=IMPORT.phase,sp='<span class="spin"></span> ';
+ let body='';
+ if(ph==='search')body=`<p>${sp}Drive'da klasör aranıyor…</p>`;
+ else if(ph==='list')body=`<p>${sp}"${esc(IMPORT.folder.ad)}" klasöründeki dosyalar listeleniyor…</p>`;
+ else if(ph==='done')body=`<p>${esc(IMPORT.msg)}</p>`;
+ else body=IMPORT.items.map((it,i)=>{
+  let inner='';
+  if(it.status==='wait')inner=`<div class="muted">Sırada</div>`;
+  else if(it.status==='loading')inner=`<div>${sp}Okunuyor…</div>`;
+  else if(it.status==='ok'){const t=withT(exT(st,it.exam),()=>tot(it.exam));inner=`<div class="t">${fdate(it.exam.tarih)} · ${esc(it.exam.ad)}${isYKS(st)?' · '+exT(st,it.exam):''}</div><div>Net ${tf(t.n)} · ${t.d} D / ${t.y} Y${it.exam.puan!=null?` · Puan ${tf(it.exam.puan)}`:''}${siraList(it.exam).length?' · '+siraList(it.exam).slice(0,2).map(x=>`${x.l} ${ti(x.s)}`).join(' · '):''}</div>${it.warn.length?`<div class="w">⚠ ${esc(it.warn.join(' · '))}</div>`:''}`}
+  else inner=`<div class="e">${esc(it.msg)}</div>`;
+  return `<div class="imp"><div class="ck">${it.status==='ok'?`<input type="checkbox" data-imp="${i}" ${it.sel?'checked':''}>`:''}</div><div class="b"><div class="fn">📄 ${esc(it.file.title)}</div>${inner}</div>${it.status==='ok'?`<button class="btn sm" data-act="imp-edit" data-i="${i}">Düzenle</button>`:''}</div>`}).join('');
+ const nSel=IMPORT.items.filter(it=>it.status==='ok'&&it.sel).length;
+ const foot=ph==='review'
+  ?`<div class="mfoot"><button class="btn sm" data-act="imp-rescan" title="Daha önce atlanan dosyaları da tara">Atlananları da tara</button><div class="r"><button class="btn" data-act="imp-cancel">İptal</button><button class="btn pri" data-act="imp-save">${nSel?`Seçilenleri ekle (${nSel})`:'Bitir'}</button></div></div>`
+  :ph==='done'?`<div class="mfoot">${IMPORT.rescan?'':'<button class="btn sm" data-act="imp-rescan">Atlananları da tara</button>'}<div class="r"><button class="btn" data-act="imp-cancel">Kapat</button></div></div>`
+  :`<div class="mfoot"><div class="r"><button class="btn" data-act="imp-cancel">İptal</button></div></div>`;
+ openModal(`<h3>☁️ Drive'dan al · ${esc(st.ad.split(' ')[0])}</h3>${IMPORT.folder?`<p class="muted" style="margin-top:-8px">Klasör: ${esc(IMPORT.folder.ad)}</p>`:''}${ph==='review'||ph==='read'?`<p class="muted" style="margin-top:-6px;font-size:13px">Okunan değerleri kontrol edin. Eklemek istediklerinizi işaretleyin. İşaretlemedikleriniz bir daha sorulmaz.</p>`:''}<div>${body}</div>${foot}`);
+}
+function saveImport(){
+ const st=stById(IMPORT.sid);st.seen=st.seen||[];
+ IMPORT.items.forEach(it=>{
+  if(it.status==='ok'&&it.sel)st.exams.push(it.exam);
+  else if((it.status==='ok'||it.status==='notfound')&&!st.seen.includes(it.file.id))st.seen.push(it.file.id);
+ });
+ if(IMPORT.folder)st.folder=IMPORT.folder;
+ const n=IMPORT.items.filter(it=>it.status==='ok'&&it.sel).length;
+ IMPORT=null;closeModal();commit();if(n)toast(`${n} deneme eklendi`);
+}
+
+/* ---------- modals ---------- */
+function openModal(html){mroot.innerHTML=`<div class="ov" data-act="ovclose"><div class="mod" role="dialog">${html}</div></div>`}
+function closeModal(){mroot.innerHTML='';editing=null}
+let editing=null;
+
+function studentModal(st){
+ editing={type:'student',id:st?st.id:null};
+ const tur=st?st.tur||'TYT':'LGS';
+ openModal(`<h3>${st?'Öğrenci bilgileri':'Yeni öğrenci'}</h3>
+ <div class="f"><label class="w2">Ad soyad<input name="ad" value="${esc(st?st.ad:'')}" placeholder="Ör. Ayşe Türkmen"></label>
+ <label>Sınıf / şube<input name="sinif" value="${esc(st?st.sinif:'')}" placeholder="Ör. 8/B"></label>
+ <label>Sınav türü<select name="tur" ${st&&st.exams.length?'disabled title="Denemesi olan öğrencide değiştirilemez"':''}><option value="LGS" ${tur==='LGS'?'selected':''}>LGS (8. sınıf)</option><option value="TYT" ${tur==='TYT'?'selected':''}>TYT (YKS)</option></select></label>
+ <label>Alan (YKS)<select name="alan"><option value="">—</option>${ALANLAR.map(a=>`<option ${st&&st.alan===a?'selected':''}>${a}</option>`).join('')}</select></label>
+ <label>Hedef puan<input name="hedef" inputmode="decimal" value="${st&&st.hedef!=null?tf(st.hedef):''}" placeholder="isteğe bağlı"></label></div>
+ ${takvimFields(st)}
+ <p class="muted" style="font-size:13px">Drive klasörü: ${st&&st.folder?`<b>${esc(st.folder.ad)}</b> <button class="btn sm" data-act="folder-reset">Klasörü yeniden ara</button>`:`ilk "Drive'dan al" işleminde öğrencinin adıyla (ör. "${esc(st?st.ad.split(' ')[0]:'Ad')}") aranır.`}</p>
+ <div class="err" id="merr"></div>
+ <div class="mfoot">${st?`<button class="btn danger" data-act="del-student">Öğrenciyi sil</button>`:''}<div class="r"><button class="btn" data-act="close">İptal</button><button class="btn pri" data-act="save-student">Kaydet</button></div></div>`);
+ mroot.querySelector('[name=ad]').focus();
+}
+function saveStudent(){
+ const v=n=>mroot.querySelector(`[name=${n}]`).value.trim();
+ const ad=v('ad');if(!ad){document.getElementById('merr').textContent='Ad soyad gerekli.';return}
+ const data={ad,sinif:v('sinif'),alan:v('alan'),hedef:dec(v('hedef'))};
+ data.takvim=readTakvim(editing.id?stById(editing.id):null);const tsel=mroot.querySelector('[name=tur]');if(!tsel.disabled)data.tur=tsel.value;
+ if(editing.id){const s=stById(editing.id);Object.assign(s,data);if(editing.folderReset)s.folder=null}
+ else{const s={id:uid(),tur:'LGS',...data,folder:null,seen:[],exams:[]};STATE.students.push(s);activeId=s.id;try{localStorage.setItem('dt_active',s.id)}catch(e){}}
+ closeModal();commit();
+}
+function examModal(st,ex,draftIdx,pre){
+ const tur=isYKS(st)?((ex&&ex.tur)||(pre&&pre.tur)||VIEW):st.tur;T=TYPES[tur]||TYPES.TYT;
+ editing={type:'exam',sid:st.id,id:ex?ex.id:null,draftIdx:draftIdx??null,src:ex&&ex.src||null,tur};
+ const e=ex||{tarih:(pre&&pre.tarih)||today(),ad:(pre&&pre.ad)||'',r:{}};
+ const v=(k,i)=>{const a=e.r&&e.r[k];return a&&(a[0]||a[1])?a[i]:''};
+ const rows=T.subj.map(s=>`<tr data-k="${s.k}" data-s="${s.s}"><td style="text-align:left">${s.ad}<small>${s.s} soru</small></td>
+  <td><input name="d_${s.k}" type="number" min="0" max="${s.s}" inputmode="numeric" value="${v(s.k,0)}"></td>
+  <td><input name="y_${s.k}" type="number" min="0" max="${s.s}" inputmode="numeric" value="${v(s.k,1)}"></td>
+  <td class="bos muted"></td><td class="net"></td></tr>`).join('');
+ const n=x=>x==null?'':x;
+ const srows=SIRA.map(([k,l])=>{const a=(e.sira&&e.sira[k])||[];return `<tr><td style="text-align:left">${l}</td><td><input name="s_${k}" inputmode="numeric" value="${n(a[0])}"></td><td><input name="k_${k}" inputmode="numeric" value="${n(a[1])}"></td></tr>`}).join('');
+ const isDraft=draftIdx!=null;
+ openModal(`<h3>${isDraft?'Okunan denemeyi düzenle':ex?'Denemeyi düzenle':'Yeni deneme'} · ${esc(st.ad.split(' ')[0])} <span class="muted" style="font-weight:500">${T.key}</span></h3>
+ ${!ex&&isYKS(st)?`<div class="seg" style="margin:-4px 0 12px">${['TYT','AYT'].map(k=>`<button class="${tur===k?'on':''}" data-act="ex-tur" data-v="${k}">${k}</button>`).join('')}</div>`:''}
+ ${!ex?`<div class="fill"><label class="btn">📄 PDF veya fotoğraftan doldur<input type="file" accept="application/pdf,image/*" id="fillfile" hidden></label><span id="fillmsg" class="muted">Karneyi ya da sonuç listesinin fotoğrafını seçin, form otomatik dolsun.</span></div>`:''}
+ <div class="f"><label>Tarih<input type="date" name="tarih" value="${e.tarih}"></label><label class="w2">Deneme adı / yayın<input name="ad" value="${esc(e.ad)}" placeholder="Ör. VİP TYT-3"></label></div>
+ <div class="sec">Doğru / Yanlış <span style="text-transform:none;font-weight:400">· net = D − Y/${T.div}</span></div>
+ <div class="tscroll"><table class="et"><thead><tr><th style="text-align:left">Ders</th><th>Doğru</th><th>Yanlış</th><th>Boş</th><th>Net</th></tr></thead><tbody>${rows}</tbody>
+ <tfoot><tr><td style="text-align:left">Toplam</td><td id="td"></td><td id="ty"></td><td id="tb" class="muted"></td><td id="tn"></td></tr></tfoot></table></div>
+ <div class="sec">Sonuç (isteğe bağlı)</div>
+ <div class="f"><label>${T.puan}<input name="puan" inputmode="decimal" value="${e.puan!=null?tf(e.puan):''}"></label>
+ <label>Tahmini yüzdelik (%)<input name="yuzdelik" inputmode="decimal" value="${e.yuzdelik!=null?tf(e.yuzdelik):''}"></label>
+ <label>Şube/kurum ort. puan<input name="ortPuan" inputmode="decimal" value="${e.ortPuan!=null?tf(e.ortPuan):''}"></label>
+ <label>Kurum ort. net<input name="kurumOrtNet" inputmode="decimal" value="${e.kurumOrtNet!=null?tf(e.kurumOrtNet):''}"></label></div>
+ <div class="tscroll"><table class="et"><thead><tr><th style="text-align:left">Sıralama</th><th>Sıra</th><th>Katılım</th></tr></thead><tbody>${srows}</tbody></table></div>
+ <div class="f" style="margin-top:10px"><label class="w2">Not<input name="not" value="${esc(e.not||'')}" placeholder="Ör. süre yetmedi, fizik konuları eksik"></label></div>
+ ${e.src&&e.src.ad?`<p class="muted" style="font-size:12px">Kaynak dosya: ${esc(e.src.ad)}</p>`:''}
+ <div class="err" id="merr"></div>
+ <div class="mfoot">${ex&&!isDraft?`<button class="btn danger" data-act="del-exam">Sil</button><button class="btn" data-act="copy-exam">Kopyala</button>`:''}<div class="r"><button class="btn" data-act="close">${isDraft?'Geri':'İptal'}</button><button class="btn pri" data-act="save-exam">${isDraft?'Tamam':'Kaydet'}</button></div></div>`);
+ recalc();
+}
+function readDY(){
+ const r={};let bad=false;
+ mroot.querySelectorAll('.et tbody tr[data-k]').forEach(tr=>{const k=tr.dataset.k,s=+tr.dataset.s;
+  const d=Math.max(0,parseInt(tr.querySelector(`[name=d_${k}]`).value)||0),y=Math.max(0,parseInt(tr.querySelector(`[name=y_${k}]`).value)||0);
+  const b=d+y>s;tr.classList.toggle('bad',b);if(b)bad=true;
+  tr.querySelector('.bos').textContent=b?'!':s-d-y;const n=d-y/T.div;const nc=tr.querySelector('.net');nc.textContent=(d||y)?tf(n):'—';nc.className='net'+(n<0?' neg':'');
+  if(d||y)r[k]=[d,y]});
+ return {r,bad};
+}
+function recalc(){const {r}=readDY();const t=tot({r});const tq=T.subj.reduce((a,s)=>a+s.s,0);
+ document.getElementById('td').textContent=t.d;document.getElementById('ty').textContent=t.y;document.getElementById('tb').textContent=tq-t.d-t.y;document.getElementById('tn').textContent=tf(t.n)}
+function fillForm(e){
+ const set=(n,v)=>{const el=mroot.querySelector(`[name=${n}]`);if(el)el.value=v==null?'':v};
+ set('tarih',e.tarih);set('ad',e.ad);
+ T.subj.forEach(s=>{const a=e.r[s.k];set('d_'+s.k,a?a[0]:'');set('y_'+s.k,a?a[1]:'')});
+ set('puan',e.puan!=null?tf(e.puan):'');set('yuzdelik',e.yuzdelik!=null?tf(e.yuzdelik):'');set('ortPuan',e.ortPuan!=null?tf(e.ortPuan):'');set('kurumOrtNet',e.kurumOrtNet!=null?tf(e.kurumOrtNet):'');
+ SIRA.forEach(([k])=>{const a=(e.sira&&e.sira[k])||[];set('s_'+k,a[0]);set('k_'+k,a[1])});
+ set('not',e.not||'');recalc();
+}
+async function fillFromFile(file){
+ const st=stById(editing.sid);useT(st);
+ const msg=t=>{const m=document.getElementById('fillmsg');if(m)m.innerHTML=t};
+ try{
+  msg('<span class="spin"></span> Dosya okunuyor…');
+  let text='',imgs=[];
+  if(file.type==='application/pdf'||/\.pdf$/i.test(file.name)){const r=await pdfExtract(file);text=r.text;imgs=r.imgs}
+  else if(/^image\//.test(file.type))imgs=[file];
+  else throw xerr('Desteklenmeyen dosya türü. PDF ya da fotoğraf seçin.');
+  msg('<span class="spin"></span> Sonuçlar çıkarılıyor… (biraz sürebilir)');
+  const x=await extract(st,clean(text),imgs);
+  if(!x||x.bulundu===false){msg(x&&x.ayt?'Bu bir AYT sonucu. Uygulama şimdilik yalnızca TYT denemelerini takip ediyor.':`Belgede ${esc(st.ad)} bulunamadı.`);return}
+  const n=normalize(x,st);if(isYKS(st)&&n.exam.tur!==editing.tur)examModal(st,null,editing.draftIdx,{tur:n.exam.tur});else T=TYPES[editing.tur]||T;editing.src={ad:file.name};fillForm(n.exam);
+  msg(n.warn.length?`<span style="color:var(--warn)">⚠ ${esc(n.warn.join(' · '))}</span>`:'✓ Form dolduruldu. Değerleri kontrol edip kaydedin.');
+ }catch(e){msg(`<span style="color:var(--down)">${esc(e&&e._x?e.message:'Dosya okunamadı'+(e&&e.message?' ('+e.message+')':''))}</span>`)}
+}
+function saveExam(){
+ const v=n=>mroot.querySelector(`[name=${n}]`).value.trim();
+ const {r,bad}=readDY();const err=document.getElementById('merr');
+ if(!v('tarih')){err.textContent='Tarih gerekli.';return}
+ if(bad){err.textContent='Kırmızı satırlarda doğru + yanlış, soru sayısını geçiyor.';return}
+ if(!Object.keys(r).length){err.textContent='En az bir ders için doğru/yanlış girin.';return}
+ const e={id:editing.id||uid(),tarih:v('tarih'),ad:v('ad')||'Deneme',r,puan:dec(v('puan'))};if(isYKS(stById(editing.sid)))e.tur=editing.tur;
+ const sira={};SIRA.forEach(([k])=>{const s=num(v('s_'+k));if(s!=null)sira[k]=[s,num(v('k_'+k))]});if(Object.keys(sira).length)e.sira=sira;
+ ['yuzdelik','ortPuan','kurumOrtNet'].forEach(k=>{const x=dec(v(k));if(x!=null)e[k]=x});
+ if(v('not'))e.not=v('not');
+ if(editing.src)e.src=editing.src;
+ if(editing.draftIdx!=null&&IMPORT){const it=IMPORT.items[editing.draftIdx];it.exam=e;it.warn=it.warn.filter(w=>/zaten kayıtlı/.test(w));it.sel=true;IMPORT.view='list';editing=null;renderImport();return}
+ const st=stById(editing.sid);
+ const i=st.exams.findIndex(x=>x.id===e.id);if(i>=0)st.exams[i]=e;else st.exams.push(e);if(e.tur&&e.tur!==VIEW){VIEW=e.tur;try{localStorage.setItem('dt_view',VIEW)}catch(_){}}
+ closeModal();commit();
+}
+function confirmBox(msg,act){
+ mroot.querySelector('.mfoot').innerHTML=`<span style="color:var(--down)">${msg}</span><div class="r"><button class="btn" data-act="close">Vazgeç</button><button class="btn danger solid" data-act="${act}">Evet, sil</button></div>`;
+}
+function closeAny(){
+ if(editing&&editing.draftIdx!=null&&IMPORT){IMPORT.view='list';editing=null;renderImport();return}
+ if(IMPORT){IMPORT=null}
+ closeModal();
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',ev=>{
+ if(!ev.target.closest('.menu'))document.querySelectorAll('.pop').forEach(p=>p.hidden=true);
+ const el=ev.target.closest('[data-act]');if(!el)return;
+ if(el.closest('.pop'))el.closest('.pop').hidden=true;
+ const act=el.dataset.act;const st=active();
+ if(act==='ovclose'){if(ev.target===el&&!IMPORT)closeModal();return}
+ switch(act){
+  case 'tab':setActive(el.dataset.id);break;
+  case 'add-student':studentModal(null);break;
+  case 'edit-student':studentModal(st);break;
+  case 'save-student':saveStudent();break;
+  case 'folder-reset':editing.folderReset=true;el.parentElement.innerHTML='Drive klasörü: kaydedince bir sonraki "Drive\'dan al" işleminde yeniden aranacak.';break;
+  case 'del-student':confirmBox(`${esc(st.ad)} ve tüm denemeleri silinsin mi?`,'del-student-yes');break;
+  case 'del-student-yes':STATE.students=STATE.students.filter(s=>s.id!==editing.id);activeId=null;closeModal();commit();break;
+  case 'add-exam':examModal(st,null);break;
+  case 'tk-add':examModal(st,null,null,{tarih:el.dataset.tarih,ad:el.dataset.ad,tur:el.dataset.tur||'TYT'});break;
+  case 'view':VIEW=el.dataset.v;try{localStorage.setItem('dt_view',VIEW)}catch(_){}render();break;
+  case 'ex-tur':{const v=n=>mroot.querySelector(`[name=${n}]`).value;examModal(stById(editing.sid),null,editing.draftIdx,{tur:el.dataset.v,tarih:v('tarih'),ad:v('ad')});break}
+  case 'edit-exam':examModal(st,st.exams.find(e=>e.id===el.dataset.id));break;
+  case 'save-exam':saveExam();break;
+  case 'del-exam':confirmBox('Bu deneme çöp kutusuna taşınsın mı?','del-exam-yes');break;
+  case 'del-exam-yes':{const s=stById(editing.sid);const x=s.exams.find(e=>e.id===editing.id);s.exams=s.exams.filter(e=>e.id!==editing.id);if(x){x.silindi=today();s.trash=s.trash||[];s.trash.unshift(x)}closeModal();commit();break}
+  case 'menu':{const p=el.parentElement.querySelector('.pop');p.hidden=!p.hidden;break}
+  case 'trash':trashModal(st);break;
+  case 'tr-restore':{const s=stById(editing.sid);const x=(s.trash||[]).find(e=>e.id===el.dataset.id);if(x){s.trash=s.trash.filter(e=>e!==x);delete x.silindi;s.exams.push(x);if(isYKS(s)&&exT(s,x)!==VIEW){VIEW=exT(s,x);try{localStorage.setItem('dt_view',VIEW)}catch(_){}}}closeModal();commit();break}
+  case 'tr-del':{const s=stById(editing.sid);const x=(s.trash||[]).find(e=>e.id===el.dataset.id);if(x){s.trash=s.trash.filter(e=>e!==x);if(x.src&&x.src.fileId){s.seen=s.seen||[];if(!s.seen.includes(x.src.fileId))s.seen.push(x.src.fileId)}}closeModal();commit();break}
+  case 'tr-empty':confirmBox('Çöp kutusundaki tüm denemeler kalıcı olarak silinsin mi?','tr-empty-yes');break;
+  case 'tr-empty-yes':{const s=stById(editing.sid);s.seen=s.seen||[];(s.trash||[]).forEach(x=>{if(x.src&&x.src.fileId&&!s.seen.includes(x.src.fileId))s.seen.push(x.src.fileId)});s.trash=[];closeModal();commit();break}
+  case 'report':reportModal(st);break;
+  case 'rep-copy':copyText(REPTXT);break;
+  case 'backup':backup();break;
+  case 'restore':restoreModal();break;
+  case 'restore-go':restoreGo();break;
+  case 'export':copyText(JSON.stringify(STATE));break;
+  case 'copy-exam':{const s=stById(editing.sid);const x=s.exams.find(e=>e.id===editing.id);useT(s,x);copyText(examText(x));break}
+  case 'copy-all':copyText(st.ad+'\n\n'+sorted(st).map(examText).join('\n'));break;
+  case 'import':startImport(st,false);break;
+  case 'imp-rescan':{const s=stById(IMPORT.sid);startImport(s,true);break}
+  case 'imp-edit':{const i=+el.dataset.i;IMPORT.view='edit';examModal(stById(IMPORT.sid),IMPORT.items[i].exam,i);break}
+  case 'imp-save':saveImport();break;
+  case 'imp-cancel':IMPORT=null;closeModal();break;
+  case 'close':closeAny();break;
+ }
+});
+document.addEventListener('change',ev=>{
+ const t=ev.target;
+ if(t.dataset&&t.dataset.imp!=null&&IMPORT){IMPORT.items[+t.dataset.imp].sel=t.checked;renderImport();return}
+ if(t.id==='fillfile'&&t.files&&t.files[0])fillFromFile(t.files[0]);
+ if(t.id==='rep-month')reportModal(stById(editing.sid),t.value);
+ if(t.id==='restfile'&&t.files&&t.files[0]){const f=t.files[0];f.text().then(x=>{document.getElementById('resttxt').value=x;document.getElementById('restmsg').textContent=f.name+' seçildi'})}
+});
+document.addEventListener('input',ev=>{if(ev.target.closest('.et'))recalc()});
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&mroot.innerHTML)closeAny()});
+migrate();render();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
