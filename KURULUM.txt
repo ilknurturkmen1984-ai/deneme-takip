@@ -26,13 +26,18 @@ GitHub deposu:    https://github.com/ilknurturkmen1984-ai/deneme-takip
    - iPhone notu: Ana ekrandaki uygulamanın verisi Safari'den ayrıdır; verileri
      her zaman ana ekrandaki simgeden açtığınız uygulamaya yükleyin.
 
-4) DRIVE YEDEĞİ
-   - "☁️ Yedekle": Google'a gider, izin verince geri döner ve Drive'daki
-     "YKS-LGS Takip" klasörüne yedekler (güncel dosya + günlük kopya).
-   - Girişten sonraki 1 saat boyunca yaptığınız değişiklikler kendiliğinden yedeklenir.
-   - Başka telefonda: ⋯ → "☁️ Drive'dan yükle" (aynı Google hesabıyla).
+4) DRIVE İLE EŞİTLEME (PC ve telefon)
+   - "🔄 Eşitle": Google'a gider, izin verince geri döner; bu cihazdaki ve Drive'daki
+     verileri birleştirir (yeni denemeler, düzeltmeler ve silmeler iki tarafta da korunur).
+     Veriler Drive'daki "YKS-LGS Takip" klasöründe durur; her gün için ayrı bir kopya da saklanır.
+   - Girişten sonraki 1 saat boyunca uygulama açılınca ve her değişiklikten birkaç saniye
+     sonra kendiliğinden eşitler.
+   - Alışkanlık: Bir cihazda çalışmaya başlarken ve bitirirken "🔄 Eşitle"ye basın.
+   - Yeni bir cihazda: hoş geldiniz ekranında "🔄 Drive ile eşitle".
+   - "☁️ Drive'daki yedekle değiştir" (⋯ menüsü) yalnızca acil durum içindir:
+     cihazdaki verileri tamamen Drive'dakiyle değiştirir.
 
 5) EŞİNİZİN TELEFONU
-   - Sizin Google hesabınızla "Drive'dan yükle" diyebilir, ya da
+   - Sizin Google hesabınızla "🔄 Eşitle" diyebilir, ya da
    - siz ⋯ → "📤 Yedeği dosya olarak paylaş" ile WhatsApp'tan gönderirsiniz;
      eşiniz ⋯ → "📥 Dosyadan / metinden yükle" ile dosyayı seçer.
