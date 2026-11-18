@@ -1,30 +1,38 @@
-DENEME TAKİP – KURULUM
+YKS-LGS TAKİP – KURULUM VE GÜNCELLEME
 
-1) GitHub'a yükleme (bir kez)
-   - github.com'da oturum açın → sağ üstte "+" → "New repository".
-   - Ad: deneme-takip  ·  "Public" seçili kalsın  ·  "Create repository".
-   - Açılan sayfada "uploading an existing file" bağlantısına tıklayın.
-   - Bu klasördeki dosyaların hepsini (index.html, sw.js, manifest.webmanifest ve png'ler) sürükleyip bırakın → "Commit changes".
-   - Settings → Pages → Source: "Deploy from a branch", Branch: "main" ve "/ (root)" → Save.
-   - 1–2 dakika sonra uygulama şu adreste açılır:
-     https://ilknurturkmen1984-ai.github.io/deneme-takip/
-   Not: Depoda kişisel veri yok. Çocukların sonuçları yalnızca telefonlarda saklanır.
+Uygulama adresi:  https://ilknurturkmen1984-ai.github.io/deneme-takip/
+GitHub deposu:    https://github.com/ilknurturkmen1984-ai/deneme-takip
 
-2) Telefona kurma
-   - iPhone: Safari'de adresi açın → Paylaş düğmesi → "Ana Ekrana Ekle".
-   - Android: Chrome'da adresi açın → ⋮ menüsü → "Uygulamayı yükle" veya "Ana ekrana ekle".
-   - Önemli (iPhone): Ana ekrana eklenen uygulamanın verileri Safari'den ayrı tutulur.
-     Verileri her zaman ana ekrandaki simgeden açtığınız uygulamaya yükleyin.
+1) GÜNCELLEME YÜKLEME (her yeni zip geldiğinde)
+   - Zip'i açın.
+   - GitHub'da deneme-takip deposu → Add file → Upload files.
+   - Zip'teki dosyaların HEPSİNİ sürükleyin (eskilerinin üzerine yazılır) → Commit changes.
+   - 2–3 dakika sonra uygulamayı kapatıp yeniden açın.
+   Telefondaki veriler güncellemeden etkilenmez.
 
-3) Mevcut verileri taşıma
-   - Claude'daki Deneme Takip sayfasında ⋯ → "Verileri yeni uygulamaya aktar" (veriler kopyalanır).
-   - Yeni uygulamada "Yedekten yükle" → metni kutuya yapıştırın → "Yükle".
+2) GOOGLE AYARLARI (bir kez – Drive yedeği için)
+   console.cloud.google.com → Google Auth Platform → Clients → "YKS-LGS Takip":
+   - Authorized JavaScript origins:  https://ilknurturkmen1984-ai.github.io
+   - Authorized redirect URIs:       https://ilknurturkmen1984-ai.github.io/deneme-takip/
+   - Save.
+   Uygulama "Testing" durumundaysa Audience → Test users listesine Gmail adresinizi
+   (eşiniz kendi hesabıyla girecekse onunkini de) ekleyin.
 
-4) Eşinizin telefonu
-   - Kendi uygulamanızda ⋯ → "Yedeği kaydet / paylaş" → WhatsApp ile gönderin.
-   - Eşiniz dosyayı iPhone'da "Dosyalar"a kaydeder, uygulamada ⋯ → "Yedekten yükle" → "Yedek dosyası seç".
-   - Yeni denemeler girdikçe aynı yolla güncel yedeği gönderebilirsiniz.
+3) TELEFONA KURMA
+   - iPhone: Safari'de adresi açın → Paylaş → "Ana Ekrana Ekle".
+   - Android: Chrome'da adresi açın → ⋮ → "Uygulamayı yükle" / "Ana ekrana ekle".
+   - Simge ya da isim değiştiğinde: eski simgeyi silip yeniden ana ekrana ekleyin
+     (veriler kaybolmaz).
+   - iPhone notu: Ana ekrandaki uygulamanın verisi Safari'den ayrıdır; verileri
+     her zaman ana ekrandaki simgeden açtığınız uygulamaya yükleyin.
 
-5) Güvenlik
-   - Ara sıra "💾 Yedekle" ile yedek alıp Drive'a koyun. Telefon değişirse ya da uygulama silinirse
-     veriler yedekten geri yüklenir.
+4) DRIVE YEDEĞİ
+   - "☁️ Yedekle": Google'a gider, izin verince geri döner ve Drive'daki
+     "YKS-LGS Takip" klasörüne yedekler (güncel dosya + günlük kopya).
+   - Girişten sonraki 1 saat boyunca yaptığınız değişiklikler kendiliğinden yedeklenir.
+   - Başka telefonda: ⋯ → "☁️ Drive'dan yükle" (aynı Google hesabıyla).
+
+5) EŞİNİZİN TELEFONU
+   - Sizin Google hesabınızla "Drive'dan yükle" diyebilir, ya da
+   - siz ⋯ → "📤 Yedeği dosya olarak paylaş" ile WhatsApp'tan gönderirsiniz;
+     eşiniz ⋯ → "📥 Dosyadan / metinden yükle" ile dosyayı seçer.
