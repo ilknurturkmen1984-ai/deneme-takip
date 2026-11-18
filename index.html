@@ -320,12 +320,12 @@ const DAPI='https://www.googleapis.com/drive/v3/files',DUP='https://www.googleap
 let gTok=null,gExp=0,gBusy=false,gT=null;
 const gerr=(c,m)=>Object.assign(new Error(m||c),{code:c});
 const lsG=k=>{try{return localStorage.getItem(k)}catch(_){return null}},lsS=(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}};
-const gValid=()=>{if(!gTok){try{const t=JSON.parse(localStorage.getItem('dt_gtok')||'null');if(t){gTok=t.tok;gExp=t.exp}}catch(_){}}return !!gTok&&Date.now()<gExp-60000};
+const gValid=()=>!!gTok&&Date.now()<gExp-60000;
 const GREDIR=(location.origin+location.pathname.replace(/index\.html$/,'')).replace(/\/?$/,'/');
 let G_PENDING='';
 function gToken(){
  if(gValid())return Promise.resolve(gTok);
- try{const t=JSON.parse(localStorage.getItem('dt_gtok')||'null');if(t&&Date.now()<t.exp-60000){gTok=t.tok;gExp=t.exp;return Promise.resolve(gTok)}}catch(_){}
+ try{const t=JSON.parse(sessionStorage.getItem('dt_gtok')||'null');if(t&&Date.now()<t.exp-60000){gTok=t.tok;gExp=t.exp;return Promise.resolve(gTok)}}catch(_){}
  return new Promise((_,rej)=>{
   const st=Math.random().toString(36).slice(2)+Date.now().toString(36);
   try{sessionStorage.setItem('dt_gstate',st);sessionStorage.setItem('dt_gpending',G_PENDING||'')}catch(_){}
@@ -341,13 +341,13 @@ function gHandleRedirect(){
  if(h.get('error')){setStatus('Google izni verilmedi ('+h.get('error')+')','warn');return ''}
  if(!st||h.get('state')!==st){setStatus('Google girişi doğrulanamadı, lütfen tekrar deneyin','warn');return ''}
  gTok=h.get('access_token');gExp=Date.now()+(+h.get('expires_in')||3600)*1000;lsS('dt_gok','1');
- try{localStorage.setItem('dt_gtok',JSON.stringify({tok:gTok,exp:gExp}))}catch(_){}
+ try{sessionStorage.setItem('dt_gtok',JSON.stringify({tok:gTok,exp:gExp}))}catch(_){}
  return pend;
 }
 async function gReq(url,o={}){
  const t=await gToken();
  const r=await fetch(url,{...o,headers:{Authorization:'Bearer '+t,...(o.headers||{})}});
- if(r.status===401){gTok=null;gExp=0;try{localStorage.removeItem('dt_gtok')}catch(_){}throw gerr('auth','Google oturumunun süresi doldu, tekrar deneyin.')}
+ if(r.status===401){gTok=null;gExp=0;throw gerr('auth','Google oturumunun süresi doldu, tekrar deneyin.')}
  if(!r.ok){let m='';try{m=(await r.json()).error.message}catch(_){}throw gerr('api',m||('Drive hatası '+r.status))}
  return r}
 async function gFind(q){const p=new URLSearchParams({q,fields:'files(id,name,modifiedTime)',pageSize:'10',orderBy:'modifiedTime desc'});return ((await(await gReq(DAPI+'?'+p)).json()).files)||[]}
@@ -361,58 +361,8 @@ async function gPut(folder,name,text){
  const body=new Blob(['--'+bd+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(meta)+'\r\n--'+bd+'\r\nContent-Type: application/json\r\n\r\n',text,'\r\n--'+bd+'--']);
  return (await gReq((ex?DUP+'/'+ex.id:DUP)+'?uploadType=multipart&fields=id,modifiedTime',{method:ex?'PATCH':'POST',headers:{'Content-Type':'multipart/related; boundary='+bd},body})).json()}
 const hm=d=>d.toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-function gStatus(){const t=lsG('dt_gsync');setStatus(t?'🔄 Son eşitleme: '+hm(new Date(t)):'🔄 Henüz eşitlenmedi · "Eşitle"ye basın',t?'':'warn')}
-function gAuto(){if(!gValid())return;G_PENDING='';clearTimeout(gT);gT=setTimeout(()=>driveSync(true),8000)}
-/* ---------- cihazlar arası eşitleme ---------- */
-let H={};
-const exH=(e,loc)=>{const {ts,...r}=e;return loc+JSON.stringify(r)};
-const stH=x=>{const {exams,trash,seen,ts,...r}=x;return JSON.stringify(r)};
-function gsInit(){H={};STATE.students.forEach(x=>{H['s:'+x.id]=stH(x);(x.exams||[]).forEach(e=>H['e:'+e.id]=exH(e,'a'));(x.trash||[]).forEach(e=>H['e:'+e.id]=exH(e,'t'))})}
-function stamp(){
- const now=Date.now(),live=new Set();STATE.silinenOgr=STATE.silinenOgr||{};STATE.silinenDeneme=STATE.silinenDeneme||{};
- STATE.students.forEach(x=>{live.add('s:'+x.id);const h=stH(x);if(H['s:'+x.id]!==h){x.ts=now;H['s:'+x.id]=h}
-  const chk=(e,loc)=>{live.add('e:'+e.id);const h=exH(e,loc);if(H['e:'+e.id]!==h){e.ts=now;H['e:'+e.id]=h}};
-  (x.exams||[]).forEach(e=>chk(e,'a'));(x.trash||[]).forEach(e=>chk(e,'t'))});
- Object.keys(H).forEach(k=>{if(live.has(k))return;const id=k.slice(2);if(k[0]==='s')STATE.silinenOgr[id]=now;else STATE.silinenDeneme[id]=now;delete H[k]});
-}
-function mergeState(L,R){
- const tsU=(a,b)=>{const m={...(a||{})};Object.entries(b||{}).forEach(([k,v])=>{if(!(m[k]>=v))m[k]=v});return m};
- const out={...L,version:Math.max(L.version||0,R.version||0),silinenOgr:tsU(L.silinenOgr,R.silinenOgr),silinenDeneme:tsU(L.silinenDeneme,R.silinenDeneme),students:[]};
- const ids=[...new Set([...L.students.map(x=>x.id),...R.students.map(x=>x.id)])];
- ids.forEach(id=>{
-  const a=L.students.find(x=>x.id===id),b=R.students.find(x=>x.id===id);
-  const meta=!b?a:!a?b:((b.ts||0)>(a.ts||0)?b:a);
-  if(out.silinenOgr[id]!=null&&out.silinenOgr[id]>=(meta.ts||0))return;
-  const recs=new Map(),add=(e,loc)=>{const o=recs.get(e.id);if(!o||(e.ts||0)>(o.e.ts||0))recs.set(e.id,{e,loc})};
-  [a,b].forEach(x=>{if(!x)return;(x.exams||[]).forEach(e=>add(e,'a'));(x.trash||[]).forEach(e=>add(e,'t'))});
-  const exams=[],trash=[];
-  recs.forEach(({e,loc},eid)=>{const d=out.silinenDeneme[eid];if(d!=null&&d>=(e.ts||0))return;(loc==='a'?exams:trash).push(e)});
-  out.students.push({...meta,exams,trash,seen:[...new Set([...((a&&a.seen)||[]),...((b&&b.seen)||[])])]});
- });
- return out;
-}
-function diffCount(A,B){const m=x=>{const r={};x.students.forEach(s=>{r['s:'+s.id]=stH(s);(s.exams||[]).forEach(e=>r['e:'+e.id]=exH(e,'a'));(s.trash||[]).forEach(e=>r['e:'+e.id]=exH(e,'t'))});return r};
- const a=m(A),b=m(B);let n=0;new Set([...Object.keys(a),...Object.keys(b)]).forEach(k=>{if(a[k]!==b[k])n++});return n}
-async function driveSync(auto){
- if(gBusy)return;gBusy=true;G_PENDING='sync';if(!auto)setStatus('🔄 Eşitleniyor…');
- try{
-  stamp();
-  const fo=await gFolder(),f=(await gFind(`name = '${DFILE}' and '${fo}' in parents and trashed = false`))[0];
-  let ch=0;
-  if(f){const r=await(await gReq(DAPI+'/'+f.id+'?alt=media')).json();
-   if(r&&Array.isArray(r.students)){delete r.kaydedildi;const m=mergeState(STATE,r);ch=diffCount(STATE,m);STATE=m;migrate()}}
-  try{localStorage.setItem(STORE,JSON.stringify(STATE))}catch(_){}
-  gsInit();
-  const txt=JSON.stringify({...STATE,kaydedildi:new Date().toISOString()});
-  await gPut(fo,DFILE,txt);
-  if(!auto||lsG('dt_gday')!==today()){await gPut(fo,`yedek_${today()}.json`,txt);lsS('dt_gday',today())}
-  lsS('dt_gsync',new Date().toISOString());
-  if(!stById(activeId))activeId=(STATE.students[0]||{}).id||null;
-  if(ch||!auto){if(!mroot.innerHTML)render()}
-  gStatus();
-  if(!auto||ch)toast(ch?`🔄 Eşitlendi · diğer cihazdan ${ch} değişiklik alındı`:'🔄 Eşitlendi ✓ Drive ile aynı')}
- catch(e){if(e.code==='redirect'){setStatus(e.message);gBusy=false;return}setStatus('Eşitlenemedi: '+e.message,'warn');if(!auto)toast(e.message)}
- gBusy=false}
+function gStatus(){const t=lsG('dt_gsync');setStatus(t?'☁️ Son Drive yedeği: '+hm(new Date(t)):'☁️ Henüz Drive yedeği yok · "Yedekle"ye basın',t?'':'warn')}
+function gAuto(){if(!gValid())return;G_PENDING='';clearTimeout(gT);gT=setTimeout(()=>driveBackup(true),15000)}
 async function driveBackup(auto){
  if(gBusy)return;gBusy=true;G_PENDING='backup';if(!auto)setStatus('☁️ Drive\'a yedekleniyor…');
  try{
@@ -435,7 +385,7 @@ async function driveRestore(){
  catch(e){if(e.code==='redirect'){setStatus(e.message);return}setStatus('Drive\'dan alınamadı: '+e.message,'warn');toast(e.message)}}
 function grestoreGo(){
  const d=editing&&editing.data;if(!d)return;delete d.kaydedildi;
- STATE=d;migrate();gsInit();activeId=(STATE.students[0]||{}).id||null;closeModal();
+ STATE=d;migrate();activeId=(STATE.students[0]||{}).id||null;closeModal();
  try{localStorage.setItem(STORE,JSON.stringify(STATE))}catch(_){}
  lsS('dt_gsync',new Date().toISOString());render();gStatus();const n=STATE.students.reduce((a,s)=>a+s.exams.length,0);toast(`Drive'dan ${STATE.students.length} öğrenci, ${n} deneme yüklendi`)}
 
@@ -463,7 +413,7 @@ function restoreGo(){
  const err=document.getElementById('merr');let d;
  try{d=JSON.parse(document.getElementById('resttxt').value.trim())}catch(e){err.textContent='Veri okunamadı. Kopyaladığınız metnin tamamını yapıştırdığınızdan emin olun.';return}
  if(!d||!Array.isArray(d.students)){err.textContent='Bu bir YKS-LGS Takip yedeği değil.';return}
- STATE=d;migrate();gsInit();activeId=(STATE.students[0]||{}).id||null;closeModal();commit();
+ STATE=d;migrate();activeId=(STATE.students[0]||{}).id||null;closeModal();commit();
  const n=STATE.students.reduce((a,s)=>a+s.exams.length,0);toast(`${STATE.students.length} öğrenci, ${n} deneme yüklendi`);
 }
 
@@ -490,7 +440,7 @@ function buildHtml(){
  +'<script id="main">'+document.getElementById('main').textContent+C+'\n</body>\n</html>\n';
 }
 async function persist(){
- try{stamp();localStorage.setItem(STORE,JSON.stringify(STATE));localStorage.setItem(STORE+'_t',new Date().toISOString());setStatus('Kaydedildi ✓');gAuto()}
+ try{localStorage.setItem(STORE,JSON.stringify(STATE));localStorage.setItem(STORE+'_t',new Date().toISOString());setStatus('Kaydedildi ✓');gAuto()}
  catch(e){setStatus('Kaydedilemedi: tarayıcı depolaması kapalı olabilir (gizli sekme?)','warn')}
 }
 function commit(){render();persist()}
@@ -508,7 +458,7 @@ function render(){
  const st=active();useT(st);
  const tabs=STATE.students.map(s=>`<button class="chip ${tema(s)} ${st&&s.id===st.id?'on':''}" data-act="tab" data-id="${s.id}"><span class="ik">${ikon(s)}</span>${esc(kisa(s))}<small>${esc(s.tur==='TYT'?'YKS':(s.tur||''))}</small></button>`).join('');
  app.innerHTML=`<header><div class="brand">YKS-LGS Takip</div><div class="tabs">${tabs}</div><div id="status" class="${statusCls}">${esc(statusTxt)}</div></header>`
-  +(st?studentView(st):`<div class="card welcome"><h2>YKS-LGS Takip'e hoş geldiniz</h2><p>Verilerinizi Drive'dan almak için eşitleyin, yedek dosyasından yükleyin ya da yeni öğrenci ekleyin.</p><button class="btn pri" data-act="gsync">🔄 Drive ile eşitle</button> <button class="btn" data-act="restore">📥 Dosyadan yükle</button> <button class="btn" data-act="add-student">+ Öğrenci ekle</button></div>`);
+  +(st?studentView(st):`<div class="card welcome"><h2>YKS-LGS Takip'e hoş geldiniz</h2><p>Önceki verilerinizi yedekten yükleyin ya da yeni öğrenci ekleyin.</p><button class="btn pri" data-act="grestore">☁️ Drive'dan yükle</button> <button class="btn" data-act="restore">📥 Dosyadan yükle</button> <button class="btn" data-act="add-student">+ Öğrenci ekle</button></div>`);
  if(st)drawCharts(st);
 }
 function delta(v,p,d=2,inv=false){if(p==null||v==null)return'';const x=v-p;const good=inv?x<-0.0001:x>0.0001,bad=inv?x>0.0001:x<-0.0001;return `<span class="delta ${good?'up':bad?'down':''}">${x>0.0001?'▲':x<-0.0001?'▼':'•'} ${tf(Math.abs(x),d)}</span>`}
@@ -517,7 +467,7 @@ function studentView(st){
  const ex=sorted(st);
  const head=`<div class="top"><div><h1><span class="ik">${ikon(st)}</span>${esc(st.ad)}</h1><div class="sub">${esc([st.sinif,isYKS(st)?'YKS':st.tur,st.alan].filter(Boolean).join(' · '))}${st.hedef?` · Hedef: ${tf(st.hedef)} puan`:''} · ${ex.length} deneme</div></div>
  ${isYKS(st)?`<div class="seg">${['TYT','AYT'].map(k=>`<button class="${VIEW===k?'on':''}" data-act="view" data-v="${k}">${k}</button>`).join('')}</div>`:''}
- <div class="actions"><button class="btn" data-act="report" ${ex.length?'':'disabled'}>📊 Aylık rapor</button><button class="btn" data-act="gsync">🔄 Eşitle</button><button class="btn pri" data-act="add-exam">+ Deneme ekle</button><div class="menu"><button class="btn" data-act="menu" aria-label="Diğer">⋯</button><div class="pop" hidden><button data-act="edit-student">👤 Öğrenci bilgileri ve takvim</button><button data-act="copy-all" ${ex.length?'':'disabled'}>📋 Tüm denemeleri kopyala</button><button data-act="gsync">🔄 Drive ile eşitle</button><button data-act="grestore">☁️ Drive'daki yedekle değiştir</button><button data-act="backup">📤 Yedeği dosya olarak paylaş</button><button data-act="restore">📥 Dosyadan / metinden yükle</button><button data-act="add-student">👥 Öğrenci ekle</button><button data-act="trash">🗑 Çöp kutusu${(st.trash||[]).length?` (${st.trash.length})`:''}</button></div></div></div></div>`;
+ <div class="actions"><button class="btn" data-act="report" ${ex.length?'':'disabled'}>📊 Aylık rapor</button><button class="btn" data-act="gbackup">☁️ Yedekle</button><button class="btn pri" data-act="add-exam">+ Deneme ekle</button><div class="menu"><button class="btn" data-act="menu" aria-label="Diğer">⋯</button><div class="pop" hidden><button data-act="edit-student">👤 Öğrenci bilgileri ve takvim</button><button data-act="copy-all" ${ex.length?'':'disabled'}>📋 Tüm denemeleri kopyala</button><button data-act="gbackup">☁️ Drive'a yedekle</button><button data-act="grestore">☁️ Drive'dan yükle</button><button data-act="backup">📤 Yedeği dosya olarak paylaş</button><button data-act="restore">📥 Dosyadan / metinden yükle</button><button data-act="add-student">👥 Öğrenci ekle</button><button data-act="trash">🗑 Çöp kutusu${(st.trash||[]).length?` (${st.trash.length})`:''}</button></div></div></div></div>`;
  if(!ex.length)return head+takvimCard(st)+`<div class="card empty">Bu öğrenci için henüz ${isYKS(st)?VIEW+' denemesi':'deneme'} yok.<br><br><button class="btn pri" data-act="add-exam">+ Deneme ekle</button></div>`;
  const nets=ex.map(e=>tot(e).n),last=ex[ex.length-1],prev=ex[ex.length-2];
  const lastN=nets[nets.length-1],prevN=prev?nets[nets.length-2]:null;
@@ -942,7 +892,7 @@ document.addEventListener('click',ev=>{
   case 'tr-empty-yes':{const s=stById(editing.sid);s.seen=s.seen||[];(s.trash||[]).forEach(x=>{if(x.src&&x.src.fileId&&!s.seen.includes(x.src.fileId))s.seen.push(x.src.fileId)});s.trash=[];closeModal();commit();break}
   case 'report':reportModal(st);break;
   case 'rep-copy':copyText(REPTXT);break;
-  case 'gbackup':case 'gsync':driveSync(false);break;
+  case 'gbackup':driveBackup(false);break;
   case 'grestore':driveRestore();break;
   case 'grestore-go':grestoreGo();break;
   case 'backup':backup();break;
@@ -968,7 +918,7 @@ document.addEventListener('change',ev=>{
 });
 document.addEventListener('input',ev=>{if(ev.target.closest('.et'))recalc()});
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&mroot.innerHTML)closeAny()});
-migrate();gsInit();render();gStatus();{const pd=gHandleRedirect();if(pd==='backup'||pd==='sync')driveSync(false);else if(pd==='restore')driveRestore();else if(gValid())driveSync(true);}
+migrate();render();gStatus();{const pd=gHandleRedirect();if(pd==='backup')driveBackup(false);else if(pd==='restore')driveRestore();}
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
