@@ -1,6 +1,6 @@
 {
- "name": "Deneme Takip",
- "short_name": "Deneme Takip",
+ "name": "YKS-LGS Takip",
+ "short_name": "YKS-LGS Takip",
  "description": "TYT · AYT · LGS deneme sınavı takibi",
  "start_url": "./",
  "scope": "./",
