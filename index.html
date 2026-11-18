@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Deneme Takip</title>
-<meta name="description" content="Deneme sınavı takip uygulaması (TYT · AYT · LGS)">
+<title>YKS-LGS Takip</title>
+<meta name="description" content="YKS ve LGS deneme sınavı takibi (TYT · AYT · LGS)">
 <meta name="theme-color" content="#2f5bea">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Deneme Takip">
+<meta name="apple-mobile-web-app-title" content="YKS-LGS Takip">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -305,9 +305,9 @@ function reportModal(st,m){
  <div class="mfoot"><span class="muted" style="font-size:12px">Rapor metnini WhatsApp'a ya da e-postaya yapıştırabilirsiniz.</span><div class="r"><button class="btn" data-act="close">Kapat</button><button class="btn pri" data-act="rep-copy">Raporu kopyala</button></div></div>`);
 }
 
-/* ---------- Google Drive yedek (TezLab ile aynı Google girişi) ---------- */
-const GCID='152062296588-q12sphnefmqitodhvsod229h3qrj875o.apps.googleusercontent.com',GSCOPE='https://www.googleapis.com/auth/drive.file';
-const DAPI='https://www.googleapis.com/drive/v3/files',DUP='https://www.googleapis.com/upload/drive/v3/files',DFOLD='Deneme Takip',DFILE='deneme_takip_veri.json';
+/* ---------- Google Drive yedek (kendi Google istemcisi) ---------- */
+const GCID='152062296588-5bob25d2nfpagn253upfpnor8gdd0lo0.apps.googleusercontent.com',GSCOPE='https://www.googleapis.com/auth/drive.file';
+const DAPI='https://www.googleapis.com/drive/v3/files',DUP='https://www.googleapis.com/upload/drive/v3/files',DFOLD='YKS-LGS Takip',DFILE='yks_lgs_takip_veri.json';
 let gTok=null,gExp=0,gBusy=false,gT=null;
 const gerr=(c,m)=>Object.assign(new Error(m||c),{code:c});
 const lsG=k=>{try{return localStorage.getItem(k)}catch(_){return null}},lsS=(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}};
@@ -345,7 +345,7 @@ async function driveBackup(auto){
   const fo=await gFolder(),txt=JSON.stringify({...STATE,kaydedildi:new Date().toISOString()});
   await gPut(fo,DFILE,txt);await gPut(fo,`yedek_${today()}.json`,txt);
   lsS('dt_gsync',new Date().toISOString());gStatus();
-  if(!auto)toast('Drive\'daki "Deneme Takip" klasörüne yedeklendi ✓')}
+  if(!auto)toast('Drive\'daki "YKS-LGS Takip" klasörüne yedeklendi ✓')}
  catch(e){setStatus('Drive yedeği alınamadı: '+e.message,'warn');if(!auto)toast(e.message)}
  gBusy=false}
 async function driveRestore(){
@@ -367,11 +367,11 @@ function grestoreGo(){
 
 /* ---------- backup / restore ---------- */
 async function backup(){
- const txt=JSON.stringify(STATE),name=`deneme-takip-yedek-${today()}.json`;
+ const txt=JSON.stringify(STATE),name=`yks-lgs-takip-yedek-${today()}.json`;
  const file=new File([txt],name,{type:'application/json'});
  const touch=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
  if(touch&&navigator.canShare&&navigator.canShare({files:[file]})){
-  try{await navigator.share({files:[file],title:'Deneme Takip yedeği'});return}catch(e){if(e&&e.name==='AbortError')return}}
+  try{await navigator.share({files:[file],title:'YKS-LGS Takip yedeği'});return}catch(e){if(e&&e.name==='AbortError')return}}
  const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();
  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);toast('Yedek dosyası indirildi');
 }
@@ -388,7 +388,7 @@ function restoreModal(){
 function restoreGo(){
  const err=document.getElementById('merr');let d;
  try{d=JSON.parse(document.getElementById('resttxt').value.trim())}catch(e){err.textContent='Veri okunamadı. Kopyaladığınız metnin tamamını yapıştırdığınızdan emin olun.';return}
- if(!d||!Array.isArray(d.students)){err.textContent='Bu bir Deneme Takip yedeği değil.';return}
+ if(!d||!Array.isArray(d.students)){err.textContent='Bu bir YKS-LGS Takip yedeği değil.';return}
  STATE=d;migrate();activeId=(STATE.students[0]||{}).id||null;closeModal();commit();
  const n=STATE.students.reduce((a,s)=>a+s.exams.length,0);toast(`${STATE.students.length} öğrenci, ${n} deneme yüklendi`);
 }
@@ -408,7 +408,7 @@ CU('sample').then(s=>{SAMPLE=s});
 function buildHtml(){
  const C='</'+'script>';
  const json=JSON.stringify(STATE).replace(/</g,'\\u003c');
- return '<!DOCTYPE html>\n<html lang="tr">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Deneme Takip</title>\n'
+ return '<!DOCTYPE html>\n<html lang="tr">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>YKS-LGS Takip</title>\n'
  +'<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">\n'
  +'<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js">'+C+'\n'
  +'<style id="css">'+document.getElementById('css').textContent+'</style>\n</head>\n<body>\n<div class="wrap" id="app"></div>\n<div id="modal-root"></div>\n'
@@ -428,8 +428,8 @@ function render(){
  charts.forEach(c=>c.destroy());charts=[];
  const st=active();useT(st);
  const tabs=STATE.students.map(s=>`<button class="chip ${st&&s.id===st.id?'on':''}" data-act="tab" data-id="${s.id}">${esc(s.ad.split(' ')[0])}<small>${esc(s.tur==='TYT'?'YKS':(s.tur||''))}</small></button>`).join('');
- app.innerHTML=`<header><div class="brand">Deneme Takip</div><div class="tabs">${tabs}</div><div id="status" class="${statusCls}">${esc(statusTxt)}</div></header>`
-  +(st?studentView(st):`<div class="card welcome"><h2>Deneme Takip'e hoş geldiniz</h2><p>Önceki verilerinizi yedekten yükleyin ya da yeni öğrenci ekleyin.</p><button class="btn pri" data-act="grestore">☁️ Drive'dan yükle</button> <button class="btn" data-act="restore">📥 Dosyadan yükle</button> <button class="btn" data-act="add-student">+ Öğrenci ekle</button></div>`);
+ app.innerHTML=`<header><div class="brand">YKS-LGS Takip</div><div class="tabs">${tabs}</div><div id="status" class="${statusCls}">${esc(statusTxt)}</div></header>`
+  +(st?studentView(st):`<div class="card welcome"><h2>YKS-LGS Takip'e hoş geldiniz</h2><p>Önceki verilerinizi yedekten yükleyin ya da yeni öğrenci ekleyin.</p><button class="btn pri" data-act="grestore">☁️ Drive'dan yükle</button> <button class="btn" data-act="restore">📥 Dosyadan yükle</button> <button class="btn" data-act="add-student">+ Öğrenci ekle</button></div>`);
  if(st)drawCharts(st);
 }
 function delta(v,p,d=2,inv=false){if(p==null||v==null)return'';const x=v-p;const good=inv?x<-0.0001:x>0.0001,bad=inv?x>0.0001:x<-0.0001;return `<span class="delta ${good?'up':bad?'down':''}">${x>0.0001?'▲':x<-0.0001?'▼':'•'} ${tf(Math.abs(x),d)}</span>`}
