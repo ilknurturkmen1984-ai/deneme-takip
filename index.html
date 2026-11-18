@@ -13,6 +13,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Deneme Takip">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style id="css">
@@ -304,6 +305,66 @@ function reportModal(st,m){
  <div class="mfoot"><span class="muted" style="font-size:12px">Rapor metnini WhatsApp'a ya da e-postaya yapıştırabilirsiniz.</span><div class="r"><button class="btn" data-act="close">Kapat</button><button class="btn pri" data-act="rep-copy">Raporu kopyala</button></div></div>`);
 }
 
+/* ---------- Google Drive yedek (TezLab ile aynı Google girişi) ---------- */
+const GCID='152062296588-q12sphnefmqitodhvsod229h3qrj875o.apps.googleusercontent.com',GSCOPE='https://www.googleapis.com/auth/drive.file';
+const DAPI='https://www.googleapis.com/drive/v3/files',DUP='https://www.googleapis.com/upload/drive/v3/files',DFOLD='Deneme Takip',DFILE='deneme_takip_veri.json';
+let gTok=null,gExp=0,gBusy=false,gT=null;
+const gerr=(c,m)=>Object.assign(new Error(m||c),{code:c});
+const lsG=k=>{try{return localStorage.getItem(k)}catch(_){return null}},lsS=(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}};
+const gValid=()=>!!gTok&&Date.now()<gExp-60000;
+function gToken(){
+ if(gValid())return Promise.resolve(gTok);
+ return new Promise((res,rej)=>{
+  if(!window.google||!google.accounts||!google.accounts.oauth2)return rej(gerr('lib','Google giriş kütüphanesi yüklenemedi. İnternet bağlantısını kontrol edin.'));
+  try{const tc=google.accounts.oauth2.initTokenClient({client_id:GCID,scope:GSCOPE,
+    callback:r=>{if(r&&r.access_token){gTok=r.access_token;gExp=Date.now()+(r.expires_in||3600)*1000;lsS('dt_gok','1');res(gTok)}else rej(gerr('consent',(r&&r.error)||'İzin verilmedi'))},
+    error_callback:e=>rej(gerr('consent',(e&&e.type)==='popup_closed'?'Google giriş penceresi kapatıldı':'Google giriş penceresi açılamadı. Açılır pencerelere izin verin.'))});
+   tc.requestAccessToken({prompt:lsG('dt_gok')?'':'consent'})}catch(e){rej(gerr('lib',e.message))}})}
+async function gReq(url,o={}){
+ const t=await gToken();
+ const r=await fetch(url,{...o,headers:{Authorization:'Bearer '+t,...(o.headers||{})}});
+ if(r.status===401){gTok=null;gExp=0;throw gerr('auth','Google oturumunun süresi doldu, tekrar deneyin.')}
+ if(!r.ok){let m='';try{m=(await r.json()).error.message}catch(_){}throw gerr('api',m||('Drive hatası '+r.status))}
+ return r}
+async function gFind(q){const p=new URLSearchParams({q,fields:'files(id,name,modifiedTime)',pageSize:'10',orderBy:'modifiedTime desc'});return ((await(await gReq(DAPI+'?'+p)).json()).files)||[]}
+async function gFolder(){
+ const f=await gFind(`name = '${DFOLD}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`);
+ if(f[0])return f[0].id;
+ return (await(await gReq(DAPI+'?fields=id',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:DFOLD,mimeType:'application/vnd.google-apps.folder'})})).json()).id}
+async function gPut(folder,name,text){
+ const ex=(await gFind(`name = '${name}' and '${folder}' in parents and trashed = false`))[0];
+ const bd='dt'+Math.random().toString(36).slice(2),meta=ex?{name}:{name,parents:[folder]};
+ const body=new Blob(['--'+bd+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(meta)+'\r\n--'+bd+'\r\nContent-Type: application/json\r\n\r\n',text,'\r\n--'+bd+'--']);
+ return (await gReq((ex?DUP+'/'+ex.id:DUP)+'?uploadType=multipart&fields=id,modifiedTime',{method:ex?'PATCH':'POST',headers:{'Content-Type':'multipart/related; boundary='+bd},body})).json()}
+const hm=d=>d.toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+function gStatus(){const t=lsG('dt_gsync');setStatus(t?'☁️ Son Drive yedeği: '+hm(new Date(t)):'☁️ Henüz Drive yedeği yok · "Yedekle"ye basın',t?'':'warn')}
+function gAuto(){if(!gValid())return;clearTimeout(gT);gT=setTimeout(()=>driveBackup(true),15000)}
+async function driveBackup(auto){
+ if(gBusy)return;gBusy=true;if(!auto)setStatus('☁️ Drive\'a yedekleniyor…');
+ try{
+  const fo=await gFolder(),txt=JSON.stringify({...STATE,kaydedildi:new Date().toISOString()});
+  await gPut(fo,DFILE,txt);await gPut(fo,`yedek_${today()}.json`,txt);
+  lsS('dt_gsync',new Date().toISOString());gStatus();
+  if(!auto)toast('Drive\'daki "Deneme Takip" klasörüne yedeklendi ✓')}
+ catch(e){setStatus('Drive yedeği alınamadı: '+e.message,'warn');if(!auto)toast(e.message)}
+ gBusy=false}
+async function driveRestore(){
+ try{
+  setStatus('☁️ Drive\'daki yedek aranıyor…');
+  const fo=await gFolder(),f=(await gFind(`name = '${DFILE}' and '${fo}' in parents and trashed = false`))[0];
+  if(!f){gStatus();toast('Drive\'da henüz yedek yok. Önce "Yedekle" ile yedek alın.');return}
+  const d=await(await gReq(DAPI+'/'+f.id+'?alt=media')).json();
+  if(!d||!Array.isArray(d.students))throw gerr('bad','Drive\'daki yedek dosyası okunamadı.');
+  const n=d.students.reduce((a,s)=>a+s.exams.length,0);gStatus();
+  editing={type:'grestore',data:d};
+  openModal(`<h3>☁️ Drive'dan yükle</h3><p>Drive'daki yedek: <b>${d.students.length} öğrenci, ${n} deneme</b><br><span class="muted">Son kayıt: ${hm(new Date(d.kaydedildi||f.modifiedTime))}</span></p>${STATE.students.length?'<p class="muted" style="font-size:13px">Bu cihazdaki veriler Drive\'daki yedekle değiştirilecek.</p>':''}<div class="mfoot"><div class="r"><button class="btn" data-act="close">İptal</button><button class="btn pri" data-act="grestore-go">Yükle</button></div></div>`)}
+ catch(e){setStatus('Drive\'dan alınamadı: '+e.message,'warn');toast(e.message)}}
+function grestoreGo(){
+ const d=editing&&editing.data;if(!d)return;delete d.kaydedildi;
+ STATE=d;migrate();activeId=(STATE.students[0]||{}).id||null;closeModal();
+ try{localStorage.setItem(STORE,JSON.stringify(STATE))}catch(_){}
+ lsS('dt_gsync',new Date().toISOString());render();gStatus();const n=STATE.students.reduce((a,s)=>a+s.exams.length,0);toast(`Drive'dan ${STATE.students.length} öğrenci, ${n} deneme yüklendi`)}
+
 /* ---------- backup / restore ---------- */
 async function backup(){
  const txt=JSON.stringify(STATE),name=`deneme-takip-yedek-${today()}.json`;
@@ -355,7 +416,7 @@ function buildHtml(){
  +'<script id="main">'+document.getElementById('main').textContent+C+'\n</body>\n</html>\n';
 }
 async function persist(){
- try{localStorage.setItem(STORE,JSON.stringify(STATE));localStorage.setItem(STORE+'_t',new Date().toISOString());setStatus('Kaydedildi ✓')}
+ try{localStorage.setItem(STORE,JSON.stringify(STATE));localStorage.setItem(STORE+'_t',new Date().toISOString());setStatus('Kaydedildi ✓');gAuto()}
  catch(e){setStatus('Kaydedilemedi: tarayıcı depolaması kapalı olabilir (gizli sekme?)','warn')}
 }
 function commit(){render();persist()}
@@ -368,7 +429,7 @@ function render(){
  const st=active();useT(st);
  const tabs=STATE.students.map(s=>`<button class="chip ${st&&s.id===st.id?'on':''}" data-act="tab" data-id="${s.id}">${esc(s.ad.split(' ')[0])}<small>${esc(s.tur==='TYT'?'YKS':(s.tur||''))}</small></button>`).join('');
  app.innerHTML=`<header><div class="brand">Deneme Takip</div><div class="tabs">${tabs}</div><div id="status" class="${statusCls}">${esc(statusTxt)}</div></header>`
-  +(st?studentView(st):`<div class="card welcome"><h2>Deneme Takip'e hoş geldiniz</h2><p>Önceki verilerinizi yedekten yükleyin ya da yeni öğrenci ekleyin.</p><button class="btn pri" data-act="restore">📥 Yedekten yükle</button> <button class="btn" data-act="add-student">+ Öğrenci ekle</button></div>`);
+  +(st?studentView(st):`<div class="card welcome"><h2>Deneme Takip'e hoş geldiniz</h2><p>Önceki verilerinizi yedekten yükleyin ya da yeni öğrenci ekleyin.</p><button class="btn pri" data-act="grestore">☁️ Drive'dan yükle</button> <button class="btn" data-act="restore">📥 Dosyadan yükle</button> <button class="btn" data-act="add-student">+ Öğrenci ekle</button></div>`);
  if(st)drawCharts(st);
 }
 function delta(v,p,d=2,inv=false){if(p==null||v==null)return'';const x=v-p;const good=inv?x<-0.0001:x>0.0001,bad=inv?x>0.0001:x<-0.0001;return `<span class="delta ${good?'up':bad?'down':''}">${x>0.0001?'▲':x<-0.0001?'▼':'•'} ${tf(Math.abs(x),d)}</span>`}
@@ -377,7 +438,7 @@ function studentView(st){
  const ex=sorted(st);
  const head=`<div class="top"><div><h1>${esc(st.ad)}</h1><div class="sub">${esc([st.sinif,isYKS(st)?'YKS':st.tur,st.alan].filter(Boolean).join(' · '))}${st.hedef?` · Hedef: ${tf(st.hedef)} puan`:''} · ${ex.length} deneme</div></div>
  ${isYKS(st)?`<div class="seg">${['TYT','AYT'].map(k=>`<button class="${VIEW===k?'on':''}" data-act="view" data-v="${k}">${k}</button>`).join('')}</div>`:''}
- <div class="actions"><button class="btn" data-act="report" ${ex.length?'':'disabled'}>📊 Aylık rapor</button><button class="btn" data-act="backup">💾 Yedekle</button><button class="btn pri" data-act="add-exam">+ Deneme ekle</button><div class="menu"><button class="btn" data-act="menu" aria-label="Diğer">⋯</button><div class="pop" hidden><button data-act="edit-student">👤 Öğrenci bilgileri ve takvim</button><button data-act="copy-all" ${ex.length?'':'disabled'}>📋 Tüm denemeleri kopyala</button><button data-act="backup">💾 Yedeği kaydet / paylaş</button><button data-act="restore">📥 Yedekten yükle</button><button data-act="add-student">👥 Öğrenci ekle</button><button data-act="trash">🗑 Çöp kutusu${(st.trash||[]).length?` (${st.trash.length})`:''}</button></div></div></div></div>`;
+ <div class="actions"><button class="btn" data-act="report" ${ex.length?'':'disabled'}>📊 Aylık rapor</button><button class="btn" data-act="gbackup">☁️ Yedekle</button><button class="btn pri" data-act="add-exam">+ Deneme ekle</button><div class="menu"><button class="btn" data-act="menu" aria-label="Diğer">⋯</button><div class="pop" hidden><button data-act="edit-student">👤 Öğrenci bilgileri ve takvim</button><button data-act="copy-all" ${ex.length?'':'disabled'}>📋 Tüm denemeleri kopyala</button><button data-act="gbackup">☁️ Drive'a yedekle</button><button data-act="grestore">☁️ Drive'dan yükle</button><button data-act="backup">📤 Yedeği dosya olarak paylaş</button><button data-act="restore">📥 Dosyadan / metinden yükle</button><button data-act="add-student">👥 Öğrenci ekle</button><button data-act="trash">🗑 Çöp kutusu${(st.trash||[]).length?` (${st.trash.length})`:''}</button></div></div></div></div>`;
  if(!ex.length)return head+takvimCard(st)+`<div class="card empty">Bu öğrenci için henüz ${isYKS(st)?VIEW+' denemesi':'deneme'} yok.<br><br><button class="btn pri" data-act="add-exam">+ Deneme ekle</button></div>`;
  const nets=ex.map(e=>tot(e).n),last=ex[ex.length-1],prev=ex[ex.length-2];
  const lastN=nets[nets.length-1],prevN=prev?nets[nets.length-2]:null;
@@ -802,6 +863,9 @@ document.addEventListener('click',ev=>{
   case 'tr-empty-yes':{const s=stById(editing.sid);s.seen=s.seen||[];(s.trash||[]).forEach(x=>{if(x.src&&x.src.fileId&&!s.seen.includes(x.src.fileId))s.seen.push(x.src.fileId)});s.trash=[];closeModal();commit();break}
   case 'report':reportModal(st);break;
   case 'rep-copy':copyText(REPTXT);break;
+  case 'gbackup':driveBackup(false);break;
+  case 'grestore':driveRestore();break;
+  case 'grestore-go':grestoreGo();break;
   case 'backup':backup();break;
   case 'restore':restoreModal();break;
   case 'restore-go':restoreGo();break;
@@ -825,7 +889,7 @@ document.addEventListener('change',ev=>{
 });
 document.addEventListener('input',ev=>{if(ev.target.closest('.et'))recalc()});
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&mroot.innerHTML)closeAny()});
-migrate();render();
+migrate();render();gStatus();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
