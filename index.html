@@ -185,6 +185,16 @@ body.th-boy .card,body.th-boy .kpi{border-color:#e2ebf8}body.th-girl .card,body.
 @media (prefers-color-scheme:dark){body.th-boy{--bg:#111827;--pri-soft:#1c2740;--line:#273248}body.th-girl{--bg:#1d1218;--pri-soft:#36202b;--line:#3a2630}
  .cd.done{background:#16402a;color:#8be0ad}.cd.up{background:#4a1d1f;color:#ffaaa8}.cd.miss{background:#4a3410;color:#ffd38a}
  body.th-boy .card,body.th-boy .kpi{border-color:#273248}body.th-girl .card,body.th-girl .kpi{border-color:#3a2630}}
+.vonly{display:none!important}
+body.viewer .vonly{display:inline-flex!important}
+body.viewer [data-act=add-exam],body.viewer [data-act=gsync],body.viewer [data-act=gbackup],body.viewer [data-act=edit-student],body.viewer [data-act=trash],
+body.viewer [data-act=restore],body.viewer [data-act=grestore],body.viewer [data-act=add-student],body.viewer [data-act=backup],body.viewer [data-act=tk-add],
+body.viewer [data-act=share],body.viewer [data-act=viewer-link]{display:none!important}
+body.viewer .actions{grid-template-columns:1fr 1fr auto}
+.vbadge{display:inline-block;background:var(--pri-soft);color:var(--pri);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;margin-left:8px;vertical-align:middle}
+.linkbox{display:flex;gap:8px;margin:10px 0}.linkbox input{flex:1;font-size:12px}
+.steps{font-size:13px;color:var(--mut);margin:6px 0 0;padding-left:18px}.steps li{margin:3px 0}
+@media (max-width:560px){#status{order:4;flex-basis:100%;text-align:left!important;font-size:12px}.brand{white-space:nowrap}}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:13px;z-index:20}
 </style>
 </head>
@@ -408,7 +418,78 @@ async function gPut(folder,name,text){
  return (await gReq((ex?DUP+'/'+ex.id:DUP)+'?uploadType=multipart&fields=id,modifiedTime',{method:ex?'PATCH':'POST',headers:{'Content-Type':'multipart/related; boundary='+bd},body})).json()}
 const hm=d=>d.toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
 function gStatus(){const t=lsG('dt_gsync');setStatus(t?'🔄 Son eşitleme: '+hm(new Date(t)):'🔄 Henüz eşitlenmedi · "Eşitle"ye basın',t?'':'warn')}
-function gAuto(){if(!gValid())return;G_PENDING='';clearTimeout(gT);gT=setTimeout(()=>driveSync(true),8000)}
+function gAuto(){if(VIEWER||!gValid())return;G_PENDING='';clearTimeout(gT);gT=setTimeout(()=>driveSync(true),8000)}
+/* ---------- izleme (sadece görüntüleme) modu ---------- */
+const GAPI_DRIVE='https://www.googleapis.com/drive/v3/files/';
+let VIEWER=null;
+(function(){const q=new URLSearchParams(location.search),id=q.get('izle'),k=q.get('k');
+ if(id&&k){VIEWER={id,k};lsS('dt_viewer',JSON.stringify(VIEWER))}else{try{VIEWER=JSON.parse(lsG('dt_viewer')||'null')}catch(_){VIEWER=null}}
+ if(VIEWER){document.body.classList.add('viewer');
+  try{const base=location.origin+location.pathname,man={name:'YKS-LGS Takip',short_name:'YKS-LGS Takip',start_url:base+'?izle='+encodeURIComponent(VIEWER.id)+'&k='+encodeURIComponent(VIEWER.k),scope:base,display:'standalone',background_color:'#f5f6fa',theme_color:'#2f5bea',
+   icons:[{src:base+'icon-192.png',sizes:'192x192',type:'image/png'},{src:base+'icon-512.png',sizes:'512x512',type:'image/png'}]};
+   const l=document.querySelector('link[rel=manifest]');if(l)l.href=URL.createObjectURL(new Blob([JSON.stringify(man)],{type:'application/manifest+json'}))}catch(_){}}
+})();
+async function viewerLoad(manual){
+ if(!VIEWER)return;setStatus('👀 Güncel veriler alınıyor…');
+ try{const r=await fetch(GAPI_DRIVE+encodeURIComponent(VIEWER.id)+'?alt=media&key='+encodeURIComponent(VIEWER.k),{cache:'no-store'});
+  if(!r.ok){let m='';try{m=(await r.json()).error.message}catch(_){}throw new Error(r.status===404||r.status===403?'Paylaşım kapatılmış ya da bağlantı geçersiz.':(m||'Hata '+r.status))}
+  const d=await r.json();if(!d||!Array.isArray(d.students))throw new Error('Veri okunamadı');
+  const at=d.kaydedildi;delete d.kaydedildi;STATE=d;migrate();
+  try{localStorage.setItem(STORE,JSON.stringify(STATE));if(at)localStorage.setItem('dt_vat',at)}catch(_){}
+  if(!stById(activeId))activeId=(STATE.students[0]||{}).id||null;
+  if(!mroot.innerHTML)render();vStatus();if(manual)toast('Güncel veriler alındı ✓')}
+ catch(e){setStatus('👀 Güncellenemedi: '+e.message+' (son kayıtlı veriler gösteriliyor)','warn');if(manual)toast(e.message)}
+}
+function vStatus(){const t=lsG('dt_vat');setStatus('👀 Görüntüleme modu'+(t?' · son güncelleme '+hm(new Date(t)):''))}
+function detailModal(st,e){
+ withT(exT(st,e),()=>{const t=tot(e);
+  const rows=T.subj.map(s=>{const a=dy(e,s.k),v=a[0]-a[1]/T.div;return `<tr><td><span class="dot" style="background:${css(GCOL[s.g])}"></span>${s.ad}</td><td>${s.s}</td><td>${a[0]}</td><td>${a[1]}</td><td>${s.s-a[0]-a[1]}</td><td class="${v<0?'neg':''}"><b>${tf(v)}</b></td></tr>`}).join('');
+  const sl=siraList(e).map(x=>`${x.l} ${ti(x.s)}${x.n?' / '+ti(x.n):''}`).join(' · ');
+  openModal(`<h3>${esc(e.ad)}${isYKS(st)?' · '+exT(st,e):''}</h3><p class="muted" style="margin-top:-8px">${fdate(e.tarih)} · ${esc(st.ad)}</p>
+  <div class="kpis"><div class="kpi"><div class="l">Toplam net</div><div class="v">${tf(t.n)}</div><div class="s">${t.d} D · ${t.y} Y</div></div><div class="kpi"><div class="l">${T.puan}</div><div class="v">${tf(e.puan)}</div><div class="s">${e.yuzdelik!=null?'Yüzdelik %'+tf(e.yuzdelik):'&nbsp;'}</div></div></div>
+  ${sl?`<p style="font-size:13px"><b>Sıralama:</b> ${sl}</p>`:''}
+  <div class="tscroll"><table><thead><tr><th>Ders</th><th>Soru</th><th>D</th><th>Y</th><th>B</th><th>Net</th></tr></thead><tbody>${rows}</tbody></table></div>
+  ${e.not?`<p class="muted" style="font-size:13px;margin-top:10px">Not: ${esc(e.not)}</p>`:''}
+  <div class="mfoot"><div class="r"><button class="btn" data-act="copy-detail" data-id="${e.id}">Kopyala</button><button class="btn pri" data-act="close">Kapat</button></div></div>`)});
+}
+async function shareModal(fromRedirect){
+ const key=lsG('dt_apikey')||'',fid=lsG('dt_gfile');
+ editing={type:'share'};
+ openModal(`<h3>👨‍👩‍👧 Aileyle paylaş <span class="vbadge">sadece görüntüleme</span></h3>
+ <p style="font-size:14px;margin-top:-4px">Bu bağlantıyla açanlar tüm denemeleri, takvimi, grafikleri ve raporları <b>görür</b>; ekleme, düzenleme ve silme yapamaz. Giriş gerekmez, her açılışta en güncel veriyi alır.</p>
+ ${fid?'':'<p class="err">Önce bir kez "🔄 Eşitle" yapın; paylaşılacak dosya Drive\'da oluşsun.</p>'}
+ <div class="f"><label style="grid-column:1/-1">Google API anahtarı<input id="apikey" value="${esc(key)}" placeholder="AIza…"></label></div>
+ <div id="sharebox">${lsG('dt_vlink')?`<div class="linkbox"><input readonly value="${esc(lsG('dt_vlink'))}"><button class="btn" data-act="share-copy">Kopyala</button></div>`:''}</div>
+ <ul class="steps"><li>Bağlantıyı WhatsApp'tan eşinize ve çocuklara gönderin.</li><li>Telefonda açıp <b>Ana ekrana ekle</b> desinler.</li><li>Bağlantıyı bilen herkes görüntüleyebilir; istediğiniz zaman kapatabilirsiniz.</li></ul>
+ <div class="err" id="merr"></div>
+ <div class="mfoot"><button class="btn danger" data-act="share-off">Paylaşımı kapat</button><div class="r"><button class="btn" data-act="close">Kapat</button><button class="btn pri" data-act="share-go" ${fid?'':'disabled'}>Bağlantı oluştur</button></div></div>`);
+ if(fromRedirect&&lsG('dt_share_pending')==='go'){try{localStorage.removeItem('dt_share_pending')}catch(_){}shareGo()}
+}
+async function shareGo(){
+ const err=document.getElementById('merr'),k=(document.getElementById('apikey')||{}).value||lsG('dt_apikey')||'',fid=lsG('dt_gfile');
+ if(!/^AIza[\w-]{20,}$/.test(k.trim())){if(err)err.textContent='Geçerli bir API anahtarı girin (AIza ile başlar).';return}
+ lsS('dt_apikey',k.trim());lsS('dt_share_pending','go');G_PENDING='share';
+ try{
+  await gReq(GAPI_DRIVE+fid+'/permissions?fields=id',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone',allowFileDiscovery:false})});
+  try{localStorage.removeItem('dt_share_pending')}catch(_){}
+  const link=GREDIR+'?izle='+encodeURIComponent(fid)+'&k='+encodeURIComponent(k.trim());lsS('dt_vlink',link);
+  const t=await fetch(GAPI_DRIVE+fid+'?alt=media&key='+encodeURIComponent(k.trim()),{cache:'no-store'});
+  const ok=t.ok;
+  document.getElementById('sharebox').innerHTML=`<div class="linkbox"><input readonly value="${esc(link)}"><button class="btn pri" data-act="share-copy">Kopyala</button></div>`+(ok?'<p style="color:var(--up);font-size:13px">✓ Bağlantı hazır ve çalışıyor.</p>':'<p class="err">Bağlantı oluştu ama veri okunamadı: API anahtarının kısıtlamalarını (web sitesi ve Google Drive API) kontrol edin.</p>');
+ }catch(e){if(e.code==='redirect')return;if(err)err.textContent='Paylaşılamadı: '+e.message}
+}
+async function shareOff(){
+ const fid=lsG('dt_gfile'),err=document.getElementById('merr');if(!fid)return;G_PENDING='';
+ try{const r=await(await gReq(GAPI_DRIVE+fid+'/permissions?fields=permissions(id,type)')).json();
+  for(const p of (r.permissions||[]).filter(p=>p.type==='anyone'))await gReq(GAPI_DRIVE+fid+'/permissions/'+p.id,{method:'DELETE'});
+  try{localStorage.removeItem('dt_vlink')}catch(_){}document.getElementById('sharebox').innerHTML='<p style="font-size:13px">Paylaşım kapatıldı. Eski bağlantılar artık çalışmaz.</p>'}
+ catch(e){if(e.code==='redirect')return;if(err)err.textContent='Kapatılamadı: '+e.message}
+}
+function viewerLinkModal(){
+ editing={type:'vlink'};
+ openModal(`<h3>👀 Paylaşım bağlantım var</h3><p class="muted" style="font-size:13px;margin-top:-6px">Size gönderilen bağlantıyı aşağıya yapıştırın.</p><input id="vlinkin" placeholder="https://…?izle=…&k=…"><div class="err" id="merr"></div>
+ <div class="mfoot"><div class="r"><button class="btn" data-act="close">İptal</button><button class="btn pri" data-act="viewer-link-go">Aç</button></div></div>`);
+}
 /* ---------- cihazlar arası eşitleme ---------- */
 let H={};
 const exH=(e,loc)=>{const {ts,...r}=e;return loc+JSON.stringify(r)};
@@ -450,7 +531,7 @@ async function driveSync(auto){
   try{localStorage.setItem(STORE,JSON.stringify(STATE))}catch(_){}
   gsInit();
   const txt=JSON.stringify({...STATE,kaydedildi:new Date().toISOString()});
-  await gPut(fo,DFILE,txt);
+  {const up=await gPut(fo,DFILE,txt);if(up&&up.id)lsS('dt_gfile',up.id)}
   if(!auto||lsG('dt_gday')!==today()){await gPut(fo,`yedek_${today()}.json`,txt);lsS('dt_gday',today())}
   lsS('dt_gsync',new Date().toISOString());
   if(!stById(activeId))activeId=(STATE.students[0]||{}).id||null;
@@ -549,12 +630,12 @@ const ikon=s=>s&&s.cinsiyet==='kiz'?'👧':s&&s.cinsiyet==='erkek'?'👦':'🎓'
 const tema=s=>s&&s.cinsiyet==='kiz'?'girl':s&&s.cinsiyet==='erkek'?'boy':'';
 function render(){
  STATE.students.forEach(x=>{if(!x.cinsiyet){if(x.id==='umut')x.cinsiyet='erkek';else if(x.id==='arya')x.cinsiyet='kiz'}});
- {const a=active(),t=tema(a);document.body.className=t?'th-'+t:'';const m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='girl'?'#ffe1ec':t==='boy'?'#dceaff':'#2f5bea'}
+ {const a=active(),t=tema(a);document.body.className=(t?'th-'+t:'')+(VIEWER?' viewer':'');const m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='girl'?'#ffe1ec':t==='boy'?'#dceaff':'#2f5bea'}
  charts.forEach(c=>c.destroy());charts=[];
  const st=active();useT(st);
  const tabs=STATE.students.map(s=>`<button class="chip ${tema(s)} ${st&&s.id===st.id?'on':''}" data-act="tab" data-id="${s.id}"><span class="ik">${ikon(s)}</span>${esc(kisa(s))}<small>${esc(s.tur==='TYT'?'YKS':(s.tur||''))}</small></button>`).join('');
  app.innerHTML=`<header><div class="brand">YKS-LGS Takip</div><div class="tabs">${tabs}</div><div id="status" class="${statusCls}">${esc(statusTxt)}</div></header>`
-  +(st?studentView(st):`<div class="card welcome"><h2>YKS-LGS Takip'e hoş geldiniz</h2><p>Verilerinizi Drive'dan almak için eşitleyin, yedek dosyasından yükleyin ya da yeni öğrenci ekleyin.</p><button class="btn pri" data-act="gsync">🔄 Drive ile eşitle</button> <button class="btn" data-act="restore">📥 Dosyadan yükle</button> <button class="btn" data-act="add-student">+ Öğrenci ekle</button></div>`);
+  +(st?studentView(st):VIEWER?`<div class="card welcome"><h2>👀 Veriler yükleniyor…</h2><p>Bağlantı sorunu varsa "🔄 Yenile"ye basın.</p><button class="btn pri" data-act="viewer-refresh">🔄 Yenile</button></div>`:`<div class="card welcome"><h2>YKS-LGS Takip'e hoş geldiniz</h2><p>Verilerinizi Drive'dan almak için eşitleyin, yedek dosyasından yükleyin ya da yeni öğrenci ekleyin.</p><button class="btn pri" data-act="gsync">🔄 Drive ile eşitle</button> <button class="btn" data-act="restore">📥 Dosyadan yükle</button> <button class="btn" data-act="add-student">+ Öğrenci ekle</button><br><br><button class="btn" data-act="viewer-link">👀 Paylaşım bağlantım var</button></div>`);
  if(st&&ANALIZ_OPEN)drawCharts(st);
 }
 function delta(v,p,d=2,inv=false){if(p==null||v==null)return'';const x=v-p;const good=inv?x<-0.0001:x>0.0001,bad=inv?x>0.0001:x<-0.0001;return `<span class="delta ${good?'up':bad?'down':''}">${x>0.0001?'▲':x<-0.0001?'▼':'•'} ${tf(Math.abs(x),d)}</span>`}
@@ -584,7 +665,7 @@ function examBox(st,e){
  return withT(exT(st,e),()=>{const t=tot(e),sl=siraList(e).slice(0,3).map(x=>`${x.l} ${ti(x.s)}${x.n?'/'+ti(x.n):''}`).join(' · ');
   return `<div class="dd done"><div class="t">✅ ${esc(e.ad)}${isYKS(st)?' · '+exT(st,e):''}</div><div class="m">${fdate(e.tarih)} · <b>${tf(t.n)} net</b>${e.puan!=null?' · '+tf(e.puan)+' puan':''}${sl?' · '+sl:''}</div>
   <div class="chips">${T.groups.map(g=>`<span>${g.kisa} <b>${tf(gNet(e,g.k))}</b></span>`).join('')}</div>
-  <button class="btn sm" data-act="edit-exam" data-id="${e.id}">Ayrıntı / düzenle</button></div>`});
+  <button class="btn sm" data-act="edit-exam" data-id="${e.id}">${VIEWER?'Ayrıntı':'Ayrıntı / düzenle'}</button></div>`});
 }
 function dayDetail(st,ds,en){
  const d=pd(ds),h=`<div class="m" style="margin-top:4px"><b>${d.getDate()} ${AYLAR[d.getMonth()]} ${d.getFullYear()}, ${GUN[d.getDay()]}</b> · ${relDay(dayDiff(ds,today()))}</div>`;
@@ -611,7 +692,7 @@ function studentView(st){
  const ex=sorted(st);
  const head=`<div class="top"><div><h1><span class="ik">${ikon(st)}</span>${esc(st.ad)}</h1><div class="sub">${esc([st.sinif,isYKS(st)?'YKS':st.tur,st.alan].filter(Boolean).join(' · '))}${st.hedef?` · Hedef: ${tf(st.hedef)} puan`:''} · ${ex.length} deneme</div></div>
  ${isYKS(st)?`<div class="seg">${['TYT','AYT'].map(k=>`<button class="${VIEW===k?'on':''}" data-act="view" data-v="${k}">${k}</button>`).join('')}</div>`:''}
- <div class="actions"><button class="btn" data-act="report" ${ex.length?'':'disabled'}>📊 Aylık rapor</button><button class="btn" data-act="gsync">🔄 Eşitle</button><button class="btn pri" data-act="add-exam">+ Deneme ekle</button><div class="menu"><button class="btn" data-act="menu" aria-label="Diğer">⋯</button><div class="pop" hidden><button data-act="edit-student">👤 Öğrenci bilgileri ve takvim</button><button data-act="copy-all" ${ex.length?'':'disabled'}>📋 Tüm denemeleri kopyala</button><button data-act="gsync">🔄 Drive ile eşitle</button><button data-act="grestore">☁️ Drive'daki yedekle değiştir</button><button data-act="backup">📤 Yedeği dosya olarak paylaş</button><button data-act="restore">📥 Dosyadan / metinden yükle</button><button data-act="add-student">👥 Öğrenci ekle</button><button data-act="trash">🗑 Çöp kutusu${(st.trash||[]).length?` (${st.trash.length})`:''}</button></div></div></div></div>`;
+ <div class="actions"><button class="btn" data-act="report" ${ex.length?'':'disabled'}>📊 Aylık rapor</button><button class="btn" data-act="gsync">🔄 Eşitle</button><button class="btn vonly" data-act="viewer-refresh">🔄 Yenile</button><button class="btn pri" data-act="add-exam">+ Deneme ekle</button><div class="menu"><button class="btn" data-act="menu" aria-label="Diğer">⋯</button><div class="pop" hidden><button data-act="edit-student">👤 Öğrenci bilgileri ve takvim</button><button data-act="copy-all" ${ex.length?'':'disabled'}>📋 Tüm denemeleri kopyala</button><button data-act="gsync">🔄 Drive ile eşitle</button><button data-act="grestore">☁️ Drive'daki yedekle değiştir</button><button data-act="backup">📤 Yedeği dosya olarak paylaş</button><button data-act="restore">📥 Dosyadan / metinden yükle</button><button data-act="add-student">👥 Öğrenci ekle</button><button data-act="share">👨‍👩‍👧 Aileyle paylaş</button><button class="vonly" data-act="viewer-exit">🚪 İzleme modundan çık</button><button data-act="trash">🗑 Çöp kutusu${(st.trash||[]).length?` (${st.trash.length})`:''}</button></div></div></div></div>`;
  if(!ex.length)return head+`<div class="top2"><div class="card empty">Bu öğrenci için henüz ${isYKS(st)?VIEW+' denemesi':'deneme'} yok.<br><br><button class="btn pri" data-act="add-exam">+ Deneme ekle</button></div>${calCard(st)}</div>`;
  const nets=ex.map(e=>tot(e).n),bi=nets.indexOf(Math.max(...nets)),yEx=[...ex].reverse().filter(e=>e.yuzdelik!=null);
  const k=`<div class="kpis">
@@ -997,6 +1078,7 @@ document.addEventListener('click',ev=>{
  const el=ev.target.closest('[data-act]');if(!el)return;
  if(el.closest('.pop'))el.closest('.pop').hidden=true;
  const act=el.dataset.act;const st=active();
+ if(VIEWER&&/^(add-exam|tk-add|save-exam|del-|tr-|edit-student|save-student|add-student|gsync|gbackup|grestore|restore|backup|share|ex-tur|folder-reset)/.test(act))return;
  if(act==='ovclose'){if(ev.target===el&&!IMPORT)closeModal();return}
  switch(act){
   case 'tab':CAL_SEL=null;CAL_M=null;setActive(el.dataset.id);break;
@@ -1010,7 +1092,16 @@ document.addEventListener('click',ev=>{
   case 'tk-add':examModal(st,null,null,{tarih:el.dataset.tarih,ad:el.dataset.ad,tur:el.dataset.tur||'TYT'});break;
   case 'view':VIEW=el.dataset.v;try{localStorage.setItem('dt_view',VIEW)}catch(_){}render();break;
   case 'ex-tur':{const v=n=>mroot.querySelector(`[name=${n}]`).value;examModal(stById(editing.sid),null,editing.draftIdx,{tur:el.dataset.v,tarih:v('tarih'),ad:v('ad')});break}
-  case 'edit-exam':examModal(st,st.exams.find(e=>e.id===el.dataset.id));break;
+  case 'edit-exam':{const e=st.exams.find(x=>x.id===el.dataset.id);if(VIEWER)detailModal(st,e);else examModal(st,e);break}
+  case 'copy-detail':{const e=st.exams.find(x=>x.id===el.dataset.id);useT(st,e);copyText(examText(e));break}
+  case 'share':shareModal(false);break;
+  case 'share-go':shareGo();break;
+  case 'share-off':shareOff();break;
+  case 'share-copy':{const i=mroot.querySelector('.linkbox input');if(i){if(navigator.share&&matchMedia('(pointer:coarse)').matches){navigator.share({title:'YKS-LGS Takip',text:'Denemeleri buradan görebilirsin:',url:i.value}).catch(()=>{})}else copyText(i.value)}break}
+  case 'viewer-refresh':viewerLoad(true);break;
+  case 'viewer-exit':try{localStorage.removeItem('dt_viewer');localStorage.removeItem(STORE)}catch(_){}location.href=GREDIR;break;
+  case 'viewer-link':viewerLinkModal();break;
+  case 'viewer-link-go':{try{const u=new URL(document.getElementById('vlinkin').value.trim());const id=u.searchParams.get('izle'),k=u.searchParams.get('k');if(!id||!k)throw 0;location.href=GREDIR+'?izle='+encodeURIComponent(id)+'&k='+encodeURIComponent(k)}catch(_){document.getElementById('merr').textContent='Bu bir paylaşım bağlantısı değil.'}break}
   case 'save-exam':saveExam();break;
   case 'del-exam':confirmBox('Bu deneme çöp kutusuna taşınsın mı?','del-exam-yes');break;
   case 'del-exam-yes':{const s=stById(editing.sid);const x=s.exams.find(e=>e.id===editing.id);s.exams=s.exams.filter(e=>e.id!==editing.id);if(x){x.silindi=today();s.trash=s.trash||[];s.trash.unshift(x)}closeModal();commit();break}
@@ -1052,7 +1143,7 @@ document.addEventListener('change',ev=>{
 document.addEventListener('toggle',ev=>{if(ev.target&&ev.target.id==='analiz'){ANALIZ_OPEN=ev.target.open;if(ANALIZ_OPEN){charts.forEach(c=>c.destroy());charts=[];const a=active();if(a){useT(a);drawCharts(a)}}}},true);
 document.addEventListener('input',ev=>{if(ev.target.closest('.et'))recalc()});
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&mroot.innerHTML)closeAny()});
-migrate();gsInit();render();gStatus();{const pd=gHandleRedirect();if(pd==='backup'||pd==='sync')driveSync(false);else if(pd==='restore')driveRestore();else if(gValid())driveSync(true);}
+migrate();gsInit();render();if(VIEWER){vStatus();viewerLoad(false)}else{gStatus();const pd=gHandleRedirect();if(pd==='backup'||pd==='sync')driveSync(false);else if(pd==='restore')driveRestore();else if(pd==='share')shareModal(true);else if(gValid())driveSync(true);}
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>

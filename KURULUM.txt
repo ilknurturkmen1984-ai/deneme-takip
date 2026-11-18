@@ -37,7 +37,17 @@ GitHub deposu:    https://github.com/ilknurturkmen1984-ai/deneme-takip
    - "☁️ Drive'daki yedekle değiştir" (⋯ menüsü) yalnızca acil durum içindir:
      cihazdaki verileri tamamen Drive'dakiyle değiştirir.
 
-5) EŞİNİZİN TELEFONU
-   - Sizin Google hesabınızla "🔄 Eşitle" diyebilir, ya da
-   - siz ⋯ → "📤 Yedeği dosya olarak paylaş" ile WhatsApp'tan gönderirsiniz;
-     eşiniz ⋯ → "📥 Dosyadan / metinden yükle" ile dosyayı seçer.
+5) AİLEYLE PAYLAŞIM (eşiniz ve çocuklar sadece görür)
+   a) API anahtarı alın (bir kez):
+      console.cloud.google.com → APIs & Services → Credentials → + Create credentials → API key.
+      Oluşan anahtarı açın (Edit API key):
+      - Application restrictions: Websites → https://ilknurturkmen1984-ai.github.io/*
+      - API restrictions: Restrict key → Google Drive API
+      - Save.
+   b) Uygulamada ⋯ → "👨‍👩‍👧 Aileyle paylaş" → API anahtarını yapıştırın → "Bağlantı oluştur".
+   c) "Kopyala" ile bağlantıyı WhatsApp'tan gönderin. Açan kişi her şeyi görür, hiçbir şeyi
+      değiştiremez; her açılışta en güncel veriyi alır (siz Eşitle yaptıktan sonra).
+   d) Telefonda bağlantıyı açıp Ana ekrana ekleyin. Ana ekrandan açınca boş ekran gelirse
+      "👀 Paylaşım bağlantım var"a basıp bağlantıyı bir kez yapıştırın.
+   e) Kapatmak için: ⋯ → "Aileyle paylaş" → "Paylaşımı kapat".
+   Not: Bağlantıyı bilen herkes görüntüleyebilir; bağlantıyı sadece aileyle paylaşın.
